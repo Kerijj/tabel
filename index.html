@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Productivity Assistant Pro</title>
+    <title>WorkLife Pro Assistant</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src='https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js'></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet"/>
@@ -17,6 +17,8 @@
                     colors: {
                         "primary": "#7b5455",
                         "primary-light": "#ecbaba",
+                        "day-shift": "#7b5455",
+                        "late-shift": "#ba1a1a",
                         "surface": "#faf9f9",
                         "surface-dark": "#0d0e0e",
                     }
@@ -29,7 +31,7 @@
         .hidden-section { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-nav { background-color: #ecbaba !important; color: #1b1c1c !important; border-radius: 20px; }
-        .active-day { background-color: #7b5455 !important; color: white !important; }
+        .active-day { border: 2px solid #7b5455 !important; font-weight: 800; transform: scale(1.05); }
         .dot-day { background-color: #7b5455; }
         .dot-late { background-color: #ba1a1a; }
         body { transition: background 0.3s; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -42,7 +44,7 @@
 
 <header class="fixed top-0 w-full z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b dark:border-white/5 px-6 py-4 flex justify-between items-center">
     <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary">event_available</span>
+        <span class="material-symbols-outlined text-primary">skateboarding</span>
         <h1 id="header-title" class="text-xs font-black uppercase tracking-widest">Главная</h1>
     </div>
     <div class="flex items-center gap-3">
@@ -61,74 +63,73 @@
             <h2 id="home-clock" class="text-6xl font-black tracking-tighter text-primary dark:text-primary-light mb-6">00:00</h2>
             <div class="grid grid-cols-2 gap-4 border-t dark:border-white/10 pt-6">
                 <div><p class="text-[10px] font-bold opacity-40 uppercase">Сегодня</p><p id="home-hours" class="text-3xl font-black">0.0 ч</p></div>
-                <div class="text-right"><p class="text-[10px] font-bold opacity-40 uppercase">Сигнал</p><p id="home-alarm" class="text-xl font-bold text-primary">--:--</p></div>
+                <div class="text-right"><p class="text-[10px] font-bold opacity-40 uppercase">Будильник</p><p id="home-alarm" class="text-xl font-bold text-primary">--:--</p></div>
             </div>
         </section>
 
         <!-- Календарь -->
         <section class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border dark:border-white/5">
-            <h3 class="text-[10px] font-black uppercase opacity-40 mb-4 text-center tracking-widest">Календарь (Вс-Сб)</h3>
+            <h3 class="text-[10px] font-black uppercase opacity-40 mb-4 text-center tracking-widest">График (Вс-Сб)</h3>
             <div id="month-grid" class="grid grid-cols-7 gap-2"></div>
         </section>
 
-        <!-- Обзор дня -->
-        <div id="day-preview-card" class="hidden bg-white dark:bg-zinc-800 border-2 border-primary/20 p-6 rounded-[2.5rem] space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center">
-                <h4 id="preview-date-title" class="font-black text-primary uppercase text-sm">24 Октября</h4>
-                <button onclick="clearDayData()" class="text-[9px] bg-gray-200 dark:bg-zinc-700 px-3 py-1 rounded-full font-bold uppercase opacity-60">Очистить всё</button>
+        <!-- Окно просмотра дня -->
+        <div id="day-preview-card" class="hidden animate-in fade-in slide-in-from-bottom-4 bg-white dark:bg-zinc-800 border-2 border-primary/20 p-6 rounded-[2.5rem] space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b dark:border-white/5 pb-2">
+                <h4 id="preview-date-title" class="font-black text-primary uppercase text-sm">Выбранный день</h4>
+                <button onclick="clearDayData()" class="text-[9px] bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold uppercase">Очистить день</button>
             </div>
             
-            <div id="preview-shifts" class="bg-primary/5 p-4 rounded-2xl text-xs font-bold text-primary flex justify-between">
-                <!-- Смены здесь -->
+            <div id="preview-shifts" class="grid grid-cols-2 gap-2 text-xs font-bold">
+                <!-- Смены -->
             </div>
 
-            <!-- Добавление задач прямо в превью -->
             <div class="space-y-3">
-                <p class="text-[10px] font-bold opacity-40 uppercase">Задачи на этот день:</p>
+                <p class="text-[10px] font-bold opacity-40 uppercase">Задачи:</p>
                 <div id="preview-task-list" class="space-y-2 max-h-32 overflow-y-auto no-scrollbar"></div>
                 <div class="flex gap-2">
-                    <input type="text" id="quick-task-input" placeholder="Новая задача..." class="flex-1 bg-surface dark:bg-zinc-900 border-none rounded-xl text-xs p-3">
-                    <button onclick="addQuickTask()" class="bg-primary text-white px-4 rounded-xl font-bold">+</button>
+                    <input type="text" id="quick-task-input" placeholder="Добавить задачу..." class="flex-1 bg-surface dark:bg-zinc-900 border-none rounded-xl text-xs p-3 focus:ring-1 focus:ring-primary">
+                    <button onclick="addQuickTask()" class="bg-primary text-white px-4 rounded-xl font-bold shadow-lg">+</button>
                 </div>
             </div>
-            <button onclick="showSection('timesheet')" class="w-full py-3 bg-primary text-white rounded-2xl text-[10px] font-bold uppercase shadow-lg">Редактировать смены</button>
+            <button onclick="showSection('timesheet')" class="w-full py-3 bg-primary/10 text-primary rounded-2xl text-[10px] font-bold uppercase">Перейти в табель</button>
         </div>
     </div>
 
     <!-- TIMESHEET SECTION -->
     <div id="section-timesheet" class="hidden-section space-y-6">
         <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-lg space-y-6 border-2 border-primary/10">
-            <div class="flex justify-between items-center">
-                <input type="date" id="ts-date-picker" onchange="changeDate(this.value)" class="bg-primary/10 border-none rounded-xl font-bold text-primary text-sm">
-                <span id="ts-total" class="text-2xl font-black text-primary">0.0 ч</span>
+            <div class="flex flex-col gap-2">
+                <p class="text-[10px] font-bold opacity-40 uppercase ml-2 tracking-widest">Шаг 1: Выберите дату</p>
+                <input type="date" id="ts-date-picker" onchange="changeDate(this.value)" class="bg-primary/10 border-none rounded-2xl font-bold text-primary p-4 w-full">
             </div>
 
-            <div class="space-y-4">
+            <div class="grid grid-cols-1 gap-4">
                 <div class="p-5 rounded-3xl border-2 border-primary bg-primary/5 space-y-4">
-                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Первая смена (Утро)</p>
+                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Смена 1 (Утро)</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="time" id="ts-s1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold">
-                        <input type="time" id="ts-e1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold">
+                        <input type="time" id="ts-s1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold text-lg">
+                        <input type="time" id="ts-e1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold text-lg">
                     </div>
                 </div>
                 <div class="p-5 rounded-3xl border-2 border-primary bg-primary/5 space-y-4">
-                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Вторая смена (Вечер)</p>
+                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Смена 2 (Вечер)</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="time" id="ts-s2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold">
-                        <input type="time" id="ts-e2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold">
+                        <input type="time" id="ts-s2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold text-lg">
+                        <input type="time" id="ts-e2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center font-bold text-lg">
                     </div>
                 </div>
             </div>
 
-            <div class="relative">
+            <div class="flex gap-2">
+                <button onclick="applyToWholeWeek()" class="flex-1 py-4 bg-primary/10 text-primary border-2 border-primary rounded-3xl font-black text-[10px] uppercase tracking-tighter">Заполнить всю неделю</button>
+                <button onclick="document.getElementById('ocr-upload').click()" class="flex-1 py-4 bg-primary text-white rounded-3xl font-black text-[10px] uppercase tracking-tighter shadow-lg">Распознать фото</button>
                 <input type="file" id="ocr-upload" accept="image/*" class="hidden" onchange="processImage(this)">
-                <button onclick="document.getElementById('ocr-upload').click()" class="w-full py-5 bg-primary text-white rounded-3xl font-bold text-xs flex items-center justify-center gap-3">
-                    <span class="material-symbols-outlined">add_a_photo</span> ЗАГРУЗИТЬ ФОТО ТАБЕЛЯ
-                </button>
-                <div id="ocr-loader" class="hidden absolute inset-0 bg-white/90 dark:bg-zinc-950/90 flex flex-col items-center justify-center rounded-3xl z-10">
-                    <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <span class="font-black text-[9px] uppercase">Обработка табеля...</span>
-                </div>
+            </div>
+            
+            <div id="ocr-loader" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
+                <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-white font-bold uppercase tracking-widest text-xs">Анализ табеля...</p>
             </div>
         </div>
     </div>
@@ -136,10 +137,10 @@
     <!-- TASKS SECTION -->
     <div id="section-tasks" class="hidden-section space-y-6">
         <div id="calendar-strip" class="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1"></div>
-        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm space-y-4 border dark:border-white/5">
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-sm space-y-4 border dark:border-white/5">
             <input type="text" id="task-input" placeholder="Что сделать?" class="w-full rounded-2xl border-none bg-surface dark:bg-zinc-800 p-4">
             <div class="flex items-center justify-between">
-                <select id="task-priority" class="bg-primary/10 border-none rounded-xl text-xs font-bold text-primary p-2">
+                <select id="task-priority" class="bg-primary/10 border-none rounded-xl text-[10px] font-bold text-primary p-2">
                     <option value="🚨 Срочно">🚨 Срочно</option>
                     <option value="⏳ Ждет">⏳ Ждет</option>
                     <option value="☕ Обычное">☕ Обычное</option>
@@ -153,8 +154,8 @@
     <!-- NOTES SECTION -->
     <div id="section-notes" class="hidden-section space-y-6">
         <div class="flex gap-2">
-            <input type="text" id="note-title" placeholder="Заголовок..." class="flex-1 rounded-2xl border-none bg-white dark:bg-zinc-900 p-4 shadow-sm">
-            <button onclick="addNote()" class="bg-primary text-white px-6 rounded-2xl font-bold">OK</button>
+            <input type="text" id="note-title" placeholder="Заголовок..." class="flex-1 rounded-2xl border-none bg-white dark:bg-zinc-900 p-4">
+            <button onclick="addNote()" class="bg-primary text-white px-6 rounded-2xl font-bold">ОК</button>
         </div>
         <div id="notes-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
     </div>
@@ -169,10 +170,9 @@
 </nav>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('prod_v7_db')) || {};
+    let db = JSON.parse(localStorage.getItem('prod_v8_db')) || {};
     let selectedDate = new Date().toISOString().split('T')[0];
     const audio = document.getElementById('alarm-audio');
-    let alarmPlayedToday = { e1: false, e2: false };
 
     function unlockAudio() {
         audio.play().then(() => {
@@ -195,46 +195,50 @@
         loadDayData();
     }
 
-    // --- УЛУЧШЕННЫЙ OCR ДЛЯ ВАШЕГО ТАБЕЛЯ ---
+    // --- УМНЫЙ OCR ДЛЯ ТАБЕЛЯ ---
     async function processImage(input) {
         if (!input.files?.[0]) return;
-        const loader = document.getElementById('ocr-loader');
-        loader.classList.remove('hidden');
+        document.getElementById('ocr-loader').classList.remove('hidden');
         try {
             const result = await Tesseract.recognize(input.files[0], 'eng+heb');
-            const lines = result.data.text.split('\n');
-            let foundTimes = [];
+            const raw = result.data.text.replace(/[\. ]/g, ':');
+            const matches = raw.match(/\b([0-2]?\d:[0-5]\d)\b|\b([0-2]?\d)\b/g);
             
-            lines.forEach(line => {
-                // Ищем форматы 13:59 ИЛИ просто одиночные числа 7, 9, 17, 12
-                const matches = line.match(/\b([0-2]?\d:[0-5]\d)\b|\b([0-2]?\d)\b/g);
-                if (matches) {
-                    matches.forEach(m => {
-                        if (m.includes(':')) {
-                            foundTimes.push(m.padStart(5, '0'));
-                        } else {
-                            // Если просто число 7 или 17, превращаем в 07:00
-                            let h = parseInt(m);
-                            if (h >= 0 && h <= 24) foundTimes.push(h.toString().padStart(2, '0') + ":00");
-                        }
-                    });
-                }
-            });
-
-            if (foundTimes.length >= 2) {
-                document.getElementById('ts-s1').value = foundTimes[0];
-                document.getElementById('ts-e1').value = foundTimes[1];
-                if (foundTimes[foundTimes.length - 2] && foundTimes.length > 2) {
-                    document.getElementById('ts-s2').value = foundTimes[foundTimes.length - 2];
-                    document.getElementById('ts-e2').value = foundTimes[foundTimes.length - 1];
-                }
+            if (matches && matches.length >= 2) {
+                const times = matches.map(m => m.includes(':') ? m.padStart(5, '0') : m.padStart(2, '0') + ":00");
+                document.getElementById('ts-s1').value = times[0];
+                document.getElementById('ts-e1').value = times[1];
+                if(times[2]) document.getElementById('ts-s2').value = times[2];
+                if(times[3]) document.getElementById('ts-e2').value = times[3];
                 saveData();
-                alert("Время распознано!");
-            } else {
-                alert("Время не найдено. Попробуйте более четкое фото.");
+                alert("Время распознано! Теперь вы можете нажать 'Заполнить всю неделю'.");
             }
         } catch (e) { alert("Ошибка анализа!"); }
-        loader.classList.add('hidden');
+        document.getElementById('ocr-loader').classList.add('hidden');
+    }
+
+    // --- АВТОЗАПОЛНЕНИЕ НЕДЕЛИ ---
+    function applyToWholeWeek() {
+        const d = db[selectedDate];
+        if(!d || (!d.s1 && !d.s2)) return alert("Сначала введите время для одного дня!");
+
+        const current = new Date(selectedDate);
+        const dayOfWeek = current.getDay(); // 0 (Вс) - 6 (Сб)
+        const sunday = new Date(current);
+        sunday.setDate(current.getDate() - dayOfWeek);
+
+        if(confirm(`Прописать этот график на всю неделю (с Вс по Сб)?`)) {
+            for(let i=0; i<7; i++) {
+                const target = new Date(sunday);
+                target.setDate(sunday.getDate() + i);
+                const ds = target.toISOString().split('T')[0];
+                if(!db[ds]) db[ds] = { tasks: [], s1:'', e1:'', s2:'', e2:'' };
+                db[ds].s1 = d.s1; db[ds].e1 = d.e1;
+                db[ds].s2 = d.s2; db[ds].e2 = d.e2;
+            }
+            saveData();
+            alert("Неделя заполнена!");
+        }
     }
 
     // --- КАЛЕНДАРЬ С ВОСКРЕСЕНЬЯ ---
@@ -242,8 +246,7 @@
         const grid = document.getElementById('month-grid');
         grid.innerHTML = '';
         const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
+        const year = now.getFullYear(); const month = now.getMonth();
         const firstDay = new Date(year, month, 1).getDay(); // Вс = 0
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -258,7 +261,10 @@
             const d = db[ds] || {};
             let dot = "";
             const lastExit = d.e2 || d.e1;
-            if(lastExit) dot = `<div class="w-1 h-1 rounded-full mt-1 ${parseInt(lastExit) < 17 ? 'dot-day' : 'dot-late'}"></div>`;
+            if(lastExit) {
+                const h = parseInt(lastExit.split(':')[0]);
+                dot = `<div class="w-1 h-1 rounded-full mt-1 ${h < 17 ? 'dot-day' : 'dot-late'}"></div>`;
+            }
 
             const btn = document.createElement('button');
             btn.className = `calendar-day-btn border dark:border-white/5 ${isToday ? 'bg-primary text-white font-bold' : 'bg-white dark:bg-zinc-800'}`;
@@ -279,16 +285,16 @@
     function renderDayPreviewContent() {
         const d = db[selectedDate] || { s1:'', e1:'', s2:'', e2:'', tasks:[] };
         document.getElementById('preview-shifts').innerHTML = `
-            <div>🌅 ${d.s1 || '--'} - ${d.e1 || '--'}</div>
-            <div>🌙 ${d.s2 || '--'} - ${d.e2 || '--'}</div>
+            <div class="bg-primary/5 p-2 rounded-lg">🌅 ${d.s1 || '--'} - ${d.e1 || '--'}</div>
+            <div class="bg-primary/5 p-2 rounded-lg">🌙 ${d.s2 || '--'} - ${d.e2 || '--'}</div>
         `;
-        const taskBox = document.getElementById('preview-task-list');
-        taskBox.innerHTML = (d.tasks || []).map((t, i) => `
-            <div class="flex items-center gap-2 bg-black/5 p-2 rounded-lg">
-                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="rounded-full text-primary focus:ring-0 w-4 h-4">
+        const list = document.getElementById('preview-task-list');
+        list.innerHTML = (d.tasks || []).map((t, i) => `
+            <div class="flex items-center gap-2 text-[10px] p-2 bg-black/5 dark:bg-white/5 rounded-lg">
+                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="w-3 h-3 rounded-full text-primary">
                 <span class="${t.done ? 'line-through opacity-40' : ''}">${t.text}</span>
             </div>
-        `).join('') || "<p class='opacity-40 text-center py-2'>Нет задач</p>";
+        `).join('') || "<p class='text-[10px] opacity-40 text-center'>Задач нет</p>";
     }
 
     function addQuickTask() {
@@ -296,16 +302,12 @@
         if(!input.value.trim()) return;
         if(!db[selectedDate]) db[selectedDate] = { tasks: [] };
         db[selectedDate].tasks.push({ text: input.value, priority: '☕ Обычное', done: false });
-        input.value = '';
-        saveData();
-        renderDayPreviewContent();
+        input.value = ''; saveData(); renderDayPreviewContent();
     }
 
     function clearDayData() {
-        if(confirm("Очистить все данные за этот день?")) {
-            delete db[selectedDate];
-            saveData();
-            renderMonthCalendar();
+        if(confirm("Очистить смены и задачи?")) {
+            delete db[selectedDate]; saveData(); renderMonthCalendar();
             document.getElementById('day-preview-card').classList.add('hidden');
         }
     }
@@ -315,24 +317,23 @@
     function saveData() {
         if(!db[selectedDate]) db[selectedDate] = { tasks: [], s1:'', e1:'', s2:'', e2:'' };
         const d = db[selectedDate];
-        d.s1 = document.getElementById('ts-s1')?.value || d.s1;
-        d.e1 = document.getElementById('ts-e1')?.value || d.e1;
-        d.s2 = document.getElementById('ts-s2')?.value || d.s2;
-        d.e2 = document.getElementById('ts-e2')?.value || d.e2;
-        localStorage.setItem('prod_v7_db', JSON.stringify(db));
+        const s1 = document.getElementById('ts-s1');
+        if(s1) {
+            d.s1 = s1.value; d.e1 = document.getElementById('ts-e1').value;
+            d.s2 = document.getElementById('ts-s2').value; d.e2 = document.getElementById('ts-e2').value;
+        }
+        localStorage.setItem('prod_v8_db', JSON.stringify(db));
         updateDashboard();
     }
 
     function loadDayData() {
         const d = db[selectedDate] || { s1:'', e1:'', s2:'', e2:'', tasks:[] };
-        if(document.getElementById('ts-s1')) {
-            document.getElementById('ts-s1').value = d.s1 || '';
-            document.getElementById('ts-e1').value = d.e1 || '';
-            document.getElementById('ts-s2').value = d.s2 || '';
-            document.getElementById('ts-e2').value = d.e2 || '';
+        const s1_el = document.getElementById('ts-s1');
+        if(s1_el) {
+            s1_el.value = d.s1 || ''; document.getElementById('ts-e1').value = d.e1 || '';
+            document.getElementById('ts-s2').value = d.s2 || ''; document.getElementById('ts-e2').value = d.e2 || '';
         }
-        updateDashboard();
-        renderTasks();
+        updateDashboard(); renderTasks();
     }
 
     function updateDashboard() {
@@ -365,15 +366,15 @@
         const list = document.getElementById('task-list');
         if(!list) return;
         list.innerHTML = (db[selectedDate]?.tasks || []).map((t, i) => `
-            <li class="flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border dark:border-white/5">
+            <li class="flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-3xl border dark:border-white/5 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="w-6 h-6 rounded-full border-primary text-primary focus:ring-0 bg-transparent">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="w-5 h-5 rounded-full text-primary">
                     <div>
-                        <span class="text-[8px] uppercase font-bold text-primary opacity-50">${t.priority}</span>
+                        <span class="text-[8px] font-bold opacity-40 uppercase">${t.priority}</span>
                         <p class="text-sm ${t.done ? 'line-through opacity-30' : 'font-bold'}">${t.text}</p>
                     </div>
                 </div>
-                <button onclick="deleteTask(${i})" class="material-symbols-outlined opacity-20">delete</button>
+                <button onclick="deleteTask(${i})" class="opacity-20 material-symbols-outlined">delete</button>
             </li>
         `).join('');
     }
@@ -388,7 +389,7 @@
                 db[date].tasks.forEach(t => {
                     if(!t.done && !t.rolled) {
                         if(!db[today]) db[today] = { tasks: [] };
-                        db[today].tasks.push({ ...t, text: t.text + " (Прошлый день)" });
+                        db[today].tasks.push({ ...t, text: t.text + " (С вчера)" });
                         t.rolled = true;
                     }
                 });
@@ -410,9 +411,9 @@
         const grid = document.getElementById('notes-grid');
         if(!grid) return;
         grid.innerHTML = (db[selectedDate]?.notes_list || []).map((n, i) => `
-            <div class="p-5 rounded-[2rem] bg-amber-50 dark:bg-zinc-800 shadow-sm space-y-3 border dark:border-white/10">
+            <div class="p-5 rounded-3xl bg-amber-50 dark:bg-zinc-800 shadow-sm border dark:border-white/10 space-y-2">
                 <div class="flex justify-between items-center"><h4 class="font-black text-xs">${n.title}</h4><button onclick="deleteNote(${i})" class="opacity-20">×</button></div>
-                <textarea onchange="updateNote(${i}, this.value)" class="w-full bg-transparent border-none p-0 text-xs focus:ring-0 h-20" placeholder="Текст...">${n.content || ''}</textarea>
+                <textarea onchange="updateNote(${i}, this.value)" class="w-full bg-transparent border-none p-0 text-xs focus:ring-0 h-16" placeholder="Текст...">${n.content || ''}</textarea>
             </div>
         `).join('');
     }
@@ -424,8 +425,7 @@
 
     function updateClock() {
         const now = new Date();
-        const tStr = now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-        if(document.getElementById('home-clock')) document.getElementById('home-clock').innerText = tStr;
+        if(document.getElementById('home-clock')) document.getElementById('home-clock').innerText = now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
         document.getElementById('top-clock').innerText = now.toLocaleTimeString('ru-RU');
         document.getElementById('home-date').innerText = now.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
         if (now.getSeconds() === 0) checkAlarms(now);
@@ -435,28 +435,27 @@
         const d = db[now.toISOString().split('T')[0]];
         if (!d) return;
         const cur = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-        const check = (end, type) => {
+        const check = (end) => {
             if (!end) return;
             const [h, m] = end.split(':');
             let total = parseInt(h)*60 + parseInt(m) - 5;
             let target = Math.floor(total/60).toString().padStart(2,'0') + ":" + (total%60).toString().padStart(2,'0');
-            if (cur === target) { audio.play(); alert(`🔔 Смена скоро закончится! (Выход в ${end})`); }
+            if (cur === target) { audio.play(); alert(`🔔 Смена заканчивается через 5 минут! (${end})`); }
         };
-        check(d.e1, 'e1'); check(d.e2, 'e2');
+        check(d.e1); check(d.e2);
     }
 
     function renderCalendarStrip() {
         const box = document.getElementById('calendar-strip');
         if(!box) return; box.innerHTML = '';
         const today = new Date();
-        const start = new Date();
-        start.setDate(today.getDate() - today.getDay()); // Начинаем с Вс
+        const start = new Date(today); start.setDate(today.getDate() - today.getDay());
         for(let i = 0; i < 14; i++) {
             const d = new Date(start); d.setDate(start.getDate() + i);
             const dStr = d.toISOString().split('T')[0];
             const btn = document.createElement('button');
             btn.className = `flex-shrink-0 w-14 py-5 rounded-3xl flex flex-col items-center bg-white dark:bg-zinc-900 shadow-sm transition-all ${dStr === selectedDate ? 'active-day scale-110 shadow-lg' : 'opacity-40'}`;
-            btn.innerHTML = `<span class="text-[8px] font-black uppercase mb-1">${d.toLocaleDateString('ru-RU',{weekday:'short'})}</span><span class="text-base font-black">${d.getDate()}</span>`;
+            btn.innerHTML = `<span class="text-[8px] font-bold uppercase mb-1">${d.toLocaleDateString('ru-RU',{weekday:'short'})}</span><span class="text-base font-black">${d.getDate()}</span>`;
             btn.onclick = () => { selectedDate = dStr; renderCalendarStrip(); loadDayData(); };
             box.appendChild(btn);
         }
