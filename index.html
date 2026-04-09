@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Productivity Assistant PRO</title>
+    <title>Productivity Elite</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src='https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js'></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet"/>
@@ -17,6 +17,8 @@
                     colors: {
                         "primary": "#7b5455",
                         "primary-light": "#ecbaba",
+                        "urgent": "#ba1a1a",
+                        "waiting": "#5e5e5e",
                         "surface": "#faf9f9",
                         "surface-dark": "#0d0e0e",
                     }
@@ -28,113 +30,98 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
         .hidden-section { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .active-nav { background-color: #ecbaba !important; color: #1b1c1c !important; border-radius: 16px; }
-        .active-day { background-color: #7b5455 !important; color: white !important; transform: translateY(-4px); }
-        .shift-card { border: 2px solid #7b5455; }
-        input[type="time"] { font-size: 1.2rem; font-weight: 800; color: #7b5455; }
-        .dark input[type="time"] { color: #ecbaba; }
-        body { transition: background 0.3s; -webkit-tap-highlight-color: transparent; }
+        .active-nav { background-color: #ecbaba !important; color: #1b1c1c !important; border-radius: 20px; }
+        .active-day { background-color: #7b5455 !important; color: white !important; }
+        .calendar-dot { width: 4px; height: 4px; background: #7b5455; border-radius: 50%; margin-top: 2px; }
+        .dark .calendar-dot { background: #ecbaba; }
+        input[type="time"] { font-weight: 800; color: #7b5455; }
+        body { transition: background 0.3s; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
 <body class="bg-surface dark:bg-surface-dark text-slate-900 dark:text-gray-100">
 
-<!-- Звук будильника -->
 <audio id="alarm-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto" loop></audio>
 
-<header class="fixed top-0 w-full z-50 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-md border-b dark:border-white/5">
-    <div class="flex items-center justify-between px-6 py-4">
-        <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-primary">alarm_on</span>
-            <h1 id="header-title" class="text-sm font-extrabold uppercase tracking-widest">Главная</h1>
-        </div>
-        <div class="flex items-center gap-4">
-            <button onclick="unlockAudio()" id="audio-lock-btn" class="flex items-center gap-1 text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">
-                <span class="material-symbols-outlined text-xs">volume_off</span> ВКЛ ЗВУК
-            </button>
-            <button onclick="toggleTheme()" class="material-symbols-outlined opacity-60">contrast</button>
-            <div id="top-clock" class="font-mono font-bold text-primary text-xs">00:00:00</div>
-        </div>
+<!-- AppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b dark:border-white/5 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">analytics</span>
+        <h1 id="header-title" class="text-xs font-black uppercase tracking-widest">Главная</h1>
+    </div>
+    <div class="flex items-center gap-3">
+        <button onclick="unlockAudio()" id="audio-btn" class="bg-primary/10 text-primary text-[9px] font-bold px-2 py-1 rounded-full">🔔 ВКЛ ЗВУК</button>
+        <button onclick="toggleTheme()" class="material-symbols-outlined opacity-50">contrast</button>
+        <div id="top-clock" class="font-mono font-bold text-[10px] text-primary">00:00:00</div>
     </div>
 </header>
 
-<main class="pt-20 pb-32 px-6 max-w-2xl mx-auto min-h-screen">
+<main class="pt-20 pb-36 px-6 max-w-2xl mx-auto space-y-8">
 
     <!-- HOME SECTION -->
     <div id="section-home" class="space-y-6">
-        <section class="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-zinc-900 p-8 shadow-xl border dark:border-white/5">
-            <div class="relative z-10 space-y-4">
-                <div class="flex justify-between items-start">
-                    <p id="home-date" class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Дата...</p>
-                    <span id="alarm-status" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Будильник активен</span>
+        <section class="rounded-[2.5rem] bg-white dark:bg-zinc-900 p-8 shadow-xl border dark:border-white/5">
+            <p id="home-date" class="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-2">Загрузка...</p>
+            <h2 id="home-clock" class="text-6xl font-black tracking-tighter text-primary dark:text-primary-light mb-6">00:00</h2>
+            <div class="grid grid-cols-2 gap-4 border-t dark:border-white/5 pt-6">
+                <div>
+                    <p class="text-[10px] font-bold opacity-40 uppercase">Сегодня</p>
+                    <p id="home-hours" class="text-3xl font-black">0.0 ч</p>
                 </div>
-                <h2 id="home-clock" class="text-7xl font-black tracking-tighter text-primary dark:text-primary-light">00:00</h2>
-                <div class="flex justify-between items-end border-t dark:border-white/10 pt-4">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase opacity-40">Отработано</p>
-                        <p id="home-hours" class="text-3xl font-black">0.0 ч</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-bold uppercase opacity-40">Сигнал в:</p>
-                        <p id="home-alarm" class="text-xl font-bold text-primary">--:--</p>
-                    </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-bold opacity-40 uppercase">След. сигнал</p>
+                    <p id="home-alarm" class="text-xl font-bold text-primary">--:--</p>
                 </div>
             </div>
         </section>
 
-        <div id="fact-card" class="bg-primary/5 p-6 rounded-3xl border border-primary/10 flex gap-4">
+        <!-- Месячный календарь (Мини) -->
+        <section class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border dark:border-white/5">
+            <h3 class="text-[10px] font-bold uppercase opacity-40 mb-4 text-center">Обзор месяца и смен</h3>
+            <div id="month-grid" class="grid grid-cols-7 gap-1 text-center">
+                <!-- Генерируется через JS -->
+            </div>
+        </section>
+
+        <div id="fact-card" class="bg-primary/5 p-5 rounded-3xl border border-primary/10 flex gap-4 items-center">
             <span class="material-symbols-outlined text-primary">lightbulb</span>
-            <p id="fact-display" class="text-sm italic opacity-70">Загрузка факта...</p>
+            <p id="fact-display" class="text-xs italic opacity-70">Распознавание лиц — одна из способностей пчел.</p>
         </div>
     </div>
 
     <!-- TIMESHEET SECTION -->
     <div id="section-timesheet" class="hidden-section space-y-6">
-        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-lg space-y-6 border dark:border-white/5">
-            <div class="flex justify-between items-center">
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-lg space-y-6 border-2 border-primary/10">
+            <div class="flex justify-between items-center px-2">
                 <input type="date" id="ts-date-picker" onchange="changeDate(this.value)" class="bg-primary/10 border-none rounded-xl font-bold text-primary text-sm">
-                <span id="ts-total" class="text-xl font-black text-primary">0.0 ч</span>
+                <span id="ts-total" class="text-2xl font-black text-primary">0.0 ч</span>
             </div>
 
-            <div class="grid grid-cols-1 gap-4">
-                <!-- Смена 1 -->
-                <div class="p-4 rounded-2xl border-2 border-primary/20 bg-primary/5 space-y-3">
-                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Первая смена (Утро)</p>
-                    <div class="flex items-center gap-4">
-                        <div class="flex-1">
-                            <label class="block text-[9px] opacity-50 mb-1">ВХОД</label>
-                            <input type="time" id="ts-s1" onchange="saveData()" class="w-full bg-white dark:bg-zinc-800 border-none rounded-xl p-2 shadow-sm">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[9px] opacity-50 mb-1">ВЫХОД</label>
-                            <input type="time" id="ts-e1" onchange="saveData()" class="w-full bg-white dark:bg-zinc-800 border-none rounded-xl p-2 shadow-sm">
-                        </div>
+            <div class="space-y-4">
+                <div class="p-5 rounded-3xl border-2 border-primary bg-primary/5">
+                    <p class="text-[10px] font-black text-primary uppercase text-center mb-4 tracking-tighter">Первая смена (Утро)</p>
+                    <div class="grid grid-cols-2 gap-6">
+                        <input type="time" id="ts-s1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center shadow-inner">
+                        <input type="time" id="ts-e1" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center shadow-inner">
                     </div>
                 </div>
 
-                <!-- Смена 2 -->
-                <div class="p-4 rounded-2xl border-2 border-primary/20 bg-primary/5 space-y-3">
-                    <p class="text-[10px] font-black text-primary uppercase text-center tracking-widest">Вторая смена (Вечер)</p>
-                    <div class="flex items-center gap-4">
-                        <div class="flex-1">
-                            <label class="block text-[9px] opacity-50 mb-1">ВХОД</label>
-                            <input type="time" id="ts-s2" onchange="saveData()" class="w-full bg-white dark:bg-zinc-800 border-none rounded-xl p-2 shadow-sm">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[9px] opacity-50 mb-1">ВЫХОД</label>
-                            <input type="time" id="ts-e2" onchange="saveData()" class="w-full bg-white dark:bg-zinc-800 border-none rounded-xl p-2 shadow-sm">
-                        </div>
+                <div class="p-5 rounded-3xl border-2 border-primary bg-primary/5">
+                    <p class="text-[10px] font-black text-primary uppercase text-center mb-4 tracking-tighter">Вторая смена (Вечер)</p>
+                    <div class="grid grid-cols-2 gap-6">
+                        <input type="time" id="ts-s2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center shadow-inner">
+                        <input type="time" id="ts-e2" onchange="saveData()" class="bg-white dark:bg-zinc-800 border-none rounded-2xl p-3 text-center shadow-inner">
                     </div>
                 </div>
             </div>
 
             <div class="relative">
                 <input type="file" id="ocr-upload" accept="image/*" class="hidden" onchange="processImage(this)">
-                <button onclick="document.getElementById('ocr-upload').click()" class="w-full py-5 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all">
+                <button onclick="document.getElementById('ocr-upload').click()" class="w-full py-5 bg-primary text-white rounded-3xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl">
                     <span class="material-symbols-outlined">add_a_photo</span> ЗАГРУЗИТЬ ФОТО ТАБЕЛЯ
                 </button>
-                <div id="ocr-loader" class="hidden absolute inset-0 bg-white/90 dark:bg-black/90 flex flex-col items-center justify-center rounded-2xl z-10">
-                    <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
-                    <span class="font-bold text-[10px] uppercase tracking-widest">Анализирую фото...</span>
+                <div id="ocr-loader" class="hidden absolute inset-0 bg-white/95 dark:bg-zinc-950/95 flex flex-col items-center justify-center rounded-3xl z-10">
+                    <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <span class="font-black text-[10px] uppercase">Сканирование...</span>
                 </div>
             </div>
         </div>
@@ -142,17 +129,17 @@
 
     <!-- TASKS SECTION -->
     <div id="section-tasks" class="hidden-section space-y-6">
-        <div id="calendar-strip" class="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1"></div>
+        <div id="calendar-strip" class="flex gap-3 overflow-x-auto no-scrollbar py-2"></div>
         
-        <div class="bg-white dark:bg-zinc-900 p-4 rounded-3xl shadow-sm border dark:border-white/5 space-y-4">
-            <input type="text" id="task-input" placeholder="Что нужно сделать?" class="w-full rounded-2xl border-none bg-surface dark:bg-zinc-800 p-4 focus:ring-primary">
-            <div class="flex items-center justify-between gap-2">
-                <select id="task-shift" class="bg-primary/10 border-none rounded-xl text-xs font-bold text-primary">
-                    <option value="Общая">Общая</option>
-                    <option value="Утро">Утренняя смена</option>
-                    <option value="Вечер">Вечерняя смена</option>
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border dark:border-white/5 space-y-4">
+            <input type="text" id="task-input" placeholder="Что нужно сделать?" class="w-full rounded-2xl border-none bg-surface dark:bg-zinc-800 p-4">
+            <div class="flex items-center justify-between">
+                <select id="task-priority" class="bg-primary/10 border-none rounded-xl text-xs font-bold text-primary">
+                    <option value="Обычное">☕ Обычное</option>
+                    <option value="Срочно">🚨 Срочно</option>
+                    <option value="Ждет">⏳ Ждет</option>
                 </select>
-                <button onclick="addTask()" class="bg-primary text-white px-8 py-3 rounded-xl font-bold active:scale-95">ДОБАВИТЬ</button>
+                <button onclick="addTask()" class="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-lg">ДОБАВИТЬ</button>
             </div>
         </div>
         
@@ -163,46 +150,43 @@
     <div id="section-notes" class="hidden-section space-y-6">
         <div class="flex gap-2">
             <input type="text" id="note-title" placeholder="Заголовок..." class="flex-1 rounded-2xl border-none bg-white dark:bg-zinc-900 p-4 shadow-sm">
-            <button onclick="addNote()" class="bg-primary text-white px-6 rounded-2xl font-bold shadow-lg">OK</button>
+            <button onclick="addNote()" class="bg-primary text-white px-6 rounded-2xl font-bold">OK</button>
         </div>
         <div id="notes-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
     </div>
 
 </main>
 
-<nav class="fixed bottom-0 left-0 w-full h-20 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl flex justify-around items-center px-4 border-t dark:border-white/5 z-50">
-    <button onclick="showSection('home')" id="nav-home" class="flex flex-col items-center p-3 opacity-40">
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full h-24 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl flex justify-around items-center px-6 border-t dark:border-white/5 z-50 pb-6">
+    <button onclick="showSection('home')" id="nav-home" class="flex flex-col items-center p-4 opacity-30">
         <span class="material-symbols-outlined">home</span>
-        <span class="text-[9px] font-bold uppercase mt-1">Главная</span>
     </button>
-    <button onclick="showSection('timesheet')" id="nav-timesheet" class="flex flex-col items-center p-3 opacity-40">
+    <button onclick="showSection('timesheet')" id="nav-timesheet" class="flex flex-col items-center p-4 opacity-30">
         <span class="material-symbols-outlined">event_note</span>
-        <span class="text-[9px] font-bold uppercase mt-1 text-center">Табель</span>
     </button>
-    <button onclick="showSection('tasks')" id="nav-tasks" class="flex flex-col items-center p-3 opacity-40">
+    <button onclick="showSection('tasks')" id="nav-tasks" class="flex flex-col items-center p-4 opacity-30">
         <span class="material-symbols-outlined">checklist</span>
-        <span class="text-[9px] font-bold uppercase mt-1">Задачи</span>
     </button>
-    <button onclick="showSection('notes')" id="nav-notes" class="flex flex-col items-center p-3 opacity-40">
+    <button onclick="showSection('notes')" id="nav-notes" class="flex flex-col items-center p-4 opacity-30">
         <span class="material-symbols-outlined">description</span>
-        <span class="text-[9px] font-bold uppercase mt-1 text-center">Заметки</span>
     </button>
 </nav>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('prod_v4_db')) || {};
+    let db = JSON.parse(localStorage.getItem('prod_v5_db')) || {};
     let selectedDate = new Date().toISOString().split('T')[0];
     const audio = document.getElementById('alarm-audio');
-    let audioUnlocked = false;
+    let alarmPlayedToday = { e1: false, e2: false };
 
-    // 1. ЗВУКОВАЯ РАЗБЛОКИРОВКА
+    // 1. РАЗБЛОКИРОВКА АУДИО
     function unlockAudio() {
         audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
-            audioUnlocked = true;
-            document.getElementById('audio-lock-btn').classList.add('hidden');
-            alert("Звук активирован! Будильник сработает вовремя.");
+            document.getElementById('audio-btn').classList.replace('bg-primary/10', 'bg-green-500');
+            document.getElementById('audio-btn').classList.replace('text-primary', 'text-white');
+            document.getElementById('audio-btn').innerText = "✅ ЗВУК ГОТОВ";
         });
     }
 
@@ -215,48 +199,89 @@
         document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav', 'opacity-100'));
         document.getElementById('nav-' + id).classList.add('active-nav', 'opacity-100');
         
-        document.getElementById('header-title').innerText = id.toUpperCase();
+        document.getElementById('header-title').innerText = id === 'timesheet' ? 'ТАБЕЛЬ' : id.toUpperCase();
+        
+        if(id === 'home') renderMonthCalendar();
         if(id === 'tasks') { checkTaskRollover(); renderCalendar(); }
         if(id === 'notes') renderNotes();
         if(id === 'timesheet') document.getElementById('ts-date-picker').value = selectedDate;
         loadDayData();
     }
 
-    // 3. OCR (РАСПОЗНАВАНИЕ ТЕКСТА)
+    // 3. УЛУЧШЕННЫЙ OCR
     async function processImage(input) {
         if (!input.files?.[0]) return;
         const loader = document.getElementById('ocr-loader');
         loader.classList.remove('hidden');
         
         try {
-            const result = await Tesseract.recognize(input.files[0], 'eng', { logger: m => console.log(m) });
-            // Регулярка ловит 00:00, 00.00, 0:00
-            const rawText = result.data.text.replace(/\./g, ':'); 
+            const worker = await Tesseract.createWorker();
+            await worker.loadLanguage('eng');
+            await worker.initialize('eng');
+            await worker.setParameters({
+                tessedit_char_whitelist: '0123456789:.- ',
+            });
+            
+            const { data: { text } } = await worker.recognize(input.files[0]);
+            await worker.terminate();
+
+            const rawText = text.replace(/[\. ]/g, ':'); 
             const matches = rawText.match(/\b([0-2]?\d:[0-5]\d)\b/g);
             
             if (matches && matches.length >= 2) {
                 document.getElementById('ts-s1').value = fixTime(matches[0]);
                 document.getElementById('ts-e1').value = fixTime(matches[1]);
-                if (matches[2]) document.getElementById('ts-s2').value = fixTime(matches[2]);
-                if (matches[3]) document.getElementById('ts-e2').value = fixTime(matches[3]);
+                if (matches.length >= 4) {
+                    document.getElementById('ts-s2').value = fixTime(matches[2]);
+                    document.getElementById('ts-e2').value = fixTime(matches[3]);
+                }
                 saveData();
                 alert("Время распознано!");
             } else {
-                alert("Не удалось найти время на фото. Введите данные вручную.");
+                alert("Цифры не найдены. Сфотографируйте табель крупнее.");
             }
         } catch (e) { alert("Ошибка анализа!"); }
         loader.classList.add('hidden');
     }
 
     function fixTime(t) {
-        return t.length === 4 ? "0" + t : t;
+        let [h, m] = t.split(':');
+        return h.padStart(2, '0') + ":" + m.padStart(2, '0');
     }
 
-    // 4. ДАННЫЕ И ТАБЕЛЬ
-    function changeDate(val) {
-        selectedDate = val;
-        loadDayData();
+    // 4. ГЛАВНЫЙ КАЛЕНДАРЬ
+    function renderMonthCalendar() {
+        const grid = document.getElementById('month-grid');
+        grid.innerHTML = '';
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+        
+        dayNames.forEach(d => {
+            const div = document.createElement('div');
+            div.className = "text-[9px] font-bold opacity-30 mb-2";
+            div.innerText = d;
+            grid.appendChild(div);
+        });
+
+        for(let i = 1; i <= daysInMonth; i++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            const hasShift = db[dateStr] && (db[dateStr].s1 || db[dateStr].s2);
+            
+            const dayEl = document.createElement('div');
+            dayEl.className = `p-2 text-xs rounded-lg flex flex-col items-center ${isToday ? 'bg-primary text-white font-bold' : ''}`;
+            dayEl.innerHTML = `<span>${i}</span>${hasShift ? '<div class="calendar-dot"></div>' : ''}`;
+            dayEl.onclick = () => { selectedDate = dateStr; showSection('timesheet'); };
+            grid.appendChild(dayEl);
+        }
     }
+
+    // 5. ДАННЫЕ И ТАБЕЛЬ
+    function changeDate(val) { selectedDate = val; loadDayData(); }
 
     function saveData() {
         if (!db[selectedDate]) db[selectedDate] = { tasks: [], notes_list: [], s1:'', e1:'', s2:'', e2:'' };
@@ -265,15 +290,14 @@
         d.e1 = document.getElementById('ts-e1').value;
         d.s2 = document.getElementById('ts-s2').value;
         d.e2 = document.getElementById('ts-e2').value;
-        localStorage.setItem('prod_v4_db', JSON.stringify(db));
+        localStorage.setItem('prod_v5_db', JSON.stringify(db));
         updateDashboard();
     }
 
     function loadDayData() {
         const d = db[selectedDate] || { s1:'', e1:'', s2:'', e2:'', tasks: [] };
-        const s1_el = document.getElementById('ts-s1');
-        if(s1_el) {
-            s1_el.value = d.s1 || '';
+        if(document.getElementById('ts-s1')) {
+            document.getElementById('ts-s1').value = d.s1 || '';
             document.getElementById('ts-e1').value = d.e1 || '';
             document.getElementById('ts-s2').value = d.s2 || '';
             document.getElementById('ts-e2').value = d.e2 || '';
@@ -295,26 +319,20 @@
         if(document.getElementById('ts-total')) document.getElementById('ts-total').innerText = h + ' ч';
         if(document.getElementById('home-hours')) document.getElementById('home-hours').innerText = h;
         
-        // Будильник на главной (ближайший)
         const curMin = new Date().getHours() * 60 + new Date().getMinutes();
-        const e1m = getM(d.e1);
-        const e2m = getM(d.e2);
-        
         let nextAlarm = "--:--";
-        if(e1m > curMin) nextAlarm = d.e1;
-        else if(e2m > curMin) nextAlarm = d.e2;
-        else nextAlarm = d.e2 || d.e1 || "--:--";
-        
+        if(getM(d.e1) > curMin) nextAlarm = d.e1;
+        else if(getM(d.e2) > curMin) nextAlarm = d.e2;
         if(document.getElementById('home-alarm')) document.getElementById('home-alarm').innerText = nextAlarm;
     }
 
-    // 5. ЗАДАЧИ
+    // 6. ЗАДАЧИ
     function addTask() {
         const input = document.getElementById('task-input');
-        const shift = document.getElementById('task-shift').value;
+        const prio = document.getElementById('task-priority').value;
         if(!input.value.trim()) return;
         if(!db[selectedDate]) db[selectedDate] = { tasks: [] };
-        db[selectedDate].tasks.push({ text: input.value, shift: shift, done: false });
+        db[selectedDate].tasks.push({ text: input.value, priority: prio, done: false });
         input.value = '';
         saveData();
         renderTasks();
@@ -328,15 +346,16 @@
         tasks.forEach((t, i) => {
             const li = document.createElement('li');
             li.className = "flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border dark:border-white/5";
+            let color = t.priority === 'Срочно' ? 'text-red-500' : (t.priority === 'Ждет' ? 'text-gray-400' : 'text-primary');
             li.innerHTML = `
                 <div class="flex items-center gap-4">
                     <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="w-6 h-6 rounded-full border-primary text-primary focus:ring-0 bg-transparent">
                     <div>
-                        <span class="text-xs font-black uppercase text-primary opacity-50">${t.shift || 'Общая'}</span>
+                        <span class="text-[9px] font-black uppercase ${color}">${t.priority}</span>
                         <p class="text-sm ${t.done ? 'line-through opacity-30' : 'font-bold'}">${t.text}</p>
                     </div>
                 </div>
-                <button onclick="deleteTask(${i})" class="material-symbols-outlined text-gray-300">delete</button>
+                <button onclick="deleteTask(${i})" class="material-symbols-outlined opacity-20">delete</button>
             `;
             list.appendChild(li);
         });
@@ -350,10 +369,10 @@
         Object.keys(db).forEach(date => {
             if(date < today && db[date].tasks) {
                 db[date].tasks.forEach(t => {
-                    if(!t.done && !t.moved) {
+                    if(!t.done && !t.rolled) {
                         if(!db[today]) db[today] = { tasks: [] };
-                        db[today].tasks.push({ ...t, text: t.text + " 🗓️" });
-                        t.moved = true;
+                        db[today].tasks.push({ ...t, text: t.text + " (Прошлый день)" });
+                        t.rolled = true;
                     }
                 });
             }
@@ -361,7 +380,7 @@
         saveData();
     }
 
-    // 6. ЗАМЕТКИ
+    // 7. ЗАМЕТКИ КАРТОЧКАМИ
     function addNote() {
         const title = document.getElementById('note-title');
         if(!title.value.trim()) return;
@@ -380,7 +399,7 @@
         const notes = db[selectedDate]?.notes_list || [];
         notes.forEach((n, i) => {
             const card = document.createElement('div');
-            card.className = "p-6 rounded-[2rem] bg-amber-50 dark:bg-zinc-800 shadow-sm border dark:border-white/10 space-y-3";
+            card.className = "p-6 rounded-[2rem] bg-amber-50 dark:bg-zinc-800 shadow-sm space-y-3";
             card.innerHTML = `
                 <div class="flex justify-between items-center">
                     <h4 class="font-black text-slate-800 dark:text-amber-200">${n.title}</h4>
@@ -395,7 +414,6 @@
     function updateNote(i, val) { db[selectedDate].notes_list[i].content = val; saveData(); }
     function deleteNote(i) { db[selectedDate].notes_list.splice(i,1); saveData(); renderNotes(); }
 
-    // 7. СИСТЕМНЫЕ
     function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
     function updateClock() {
@@ -403,25 +421,28 @@
         if(document.getElementById('home-clock')) document.getElementById('home-clock').innerText = now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
         document.getElementById('top-clock').innerText = now.toLocaleTimeString('ru-RU');
         document.getElementById('home-date').innerText = now.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
-
         if (now.getSeconds() === 0) checkAlarms(now);
     }
 
     function checkAlarms(now) {
-        const d = db[now.toISOString().split('T')[0]];
+        const todayStr = now.toISOString().split('T')[0];
+        const d = db[todayStr];
         if (!d) return;
         const cur = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-        const check = (end) => {
+        
+        const check = (end, type) => {
             if (!end) return;
             const [h, m] = end.split(':');
             let total = parseInt(h)*60 + parseInt(m) - 5;
             let target = Math.floor(total/60).toString().padStart(2,'0') + ":" + (total%60).toString().padStart(2,'0');
-            if (cur === target) { 
+            if (cur === target && !alarmPlayedToday[type]) { 
                 audio.play(); 
-                alert("⏰ КОНЕЦ СМЕНЫ ЧЕРЕЗ 5 МИНУТ!"); 
+                alert(`🔔 5 минут до конца ${type === 'e1' ? 'первой' : 'второй'} смены!`); 
+                alarmPlayedToday[type] = true;
             }
         };
-        check(d.e1); check(d.e2);
+        check(d.e1, 'e1'); 
+        check(d.e2, 'e2');
     }
 
     function renderCalendar() {
@@ -433,7 +454,7 @@
             const d = new Date(); d.setDate(today.getDate() + i);
             const dStr = d.toISOString().split('T')[0];
             const btn = document.createElement('button');
-            btn.className = `flex-shrink-0 w-14 py-5 rounded-[1.5rem] flex flex-col items-center bg-white dark:bg-zinc-900 shadow-sm transition-all ${dStr === selectedDate ? 'active-day scale-110 shadow-lg' : 'opacity-40'}`;
+            btn.className = `flex-shrink-0 w-14 py-5 rounded-3xl flex flex-col items-center bg-white dark:bg-zinc-900 shadow-sm transition-all ${dStr === selectedDate ? 'active-day scale-110 shadow-lg' : 'opacity-40'}`;
             btn.innerHTML = `<span class="text-[8px] font-black uppercase mb-1">${d.toLocaleDateString('ru-RU',{weekday:'short'})}</span><span class="text-base font-black">${d.getDate()}</span>`;
             btn.onclick = () => { selectedDate = dStr; renderCalendar(); loadDayData(); };
             strip.appendChild(btn);
@@ -443,8 +464,6 @@
     window.onload = () => {
         showSection('home');
         setInterval(updateClock, 1000);
-        const facts = ["Пчёлы могут распознавать человеческие лица.", "Для мозга работа — естественное состояние.", "Чтение снижает стресс на 68%."];
-        document.getElementById('fact-display').innerText = facts[Math.floor(Math.random()*facts.length)];
     };
 </script>
 </body>
