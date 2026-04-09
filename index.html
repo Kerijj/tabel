@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="light" lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Ассистент Продуктивности</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7b5455",
+                        "primary-container": "#f4c2c2",
+                        "on-primary-container": "#734e4e",
+                        "surface": "#faf9f9",
+                        "surface-container-low": "#f5f3f3",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#d4c2c2",
+                        "secondary": "#5e5e5e"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        textarea:focus { outline: none; }
+        .active-tab { background-color: #f4c2c2; color: #1b1c1c !important; }
+    </style>
+</head>
+<body class="bg-surface text-[#1B1C1C] min-h-screen pb-32 dark:bg-[#0d0e0e] dark:text-[#e4e6e6]">
+
+<audio id="alarm-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+<header class="fixed top-0 w-full z-50 bg-[#FAF9F9]/80 backdrop-blur-xl dark:bg-[#0d0e0e]/80 flex items-center justify-between px-6 py-4 shadow-sm">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary">schedule</span>
+        <h1 class="text-lg font-bold tracking-tight">Ассистент</h1>
+    </div>
+    <div class="flex items-center gap-4">
+        <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 rounded-xl bg-surface-container-low dark:bg-zinc-800">
+            <span class="material-symbols-outlined">dark_mode</span>
+        </button>
+        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBsR1QQHcTMbMfYOFhf1CMONjjgOhrb0XU5APnEDyIpClPTcueikwjK4DbyLH-ybCzV_M6feh_mq9qWRqh2DSkukfT6vASIwT-1_0zVMOo_1zWMiR7zYebpMC-vzIxriLrDuM1mQwN4TBg-fQ9IlP0PnEVaWMY5skLdx14rZ0m44GOw_fzinKvjM2VE_3_WlKrWqcjimB9MemFRwr2wmNXstdJvzEHAnGVP9lYzEamYE2H5rXotBIPJdpvnBwC3Pdi1vxQQU5wVZk"/>
+        </div>
+    </div>
+</header>
+
+<main class="pt-24 px-6 max-w-2xl mx-auto space-y-6">
+    
+    <section id="timesheet-section" class="hidden">
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-outline-variant/30">
+            <h3 class="text-xl font-bold mb-2">Мой Табель</h3>
+            <p class="text-xs text-zinc-500 mb-4 italic">Вставьте строку из Excel (например: Воскресенье 7:00 17:00)</p>
+            <textarea id="timesheet-input" class="w-full h-24 p-4 rounded-xl bg-surface-container-low dark:bg-zinc-800 border-none text-sm" placeholder="Вставьте данные здесь..."></textarea>
+            <button onclick="saveTimesheet()" class="mt-4 w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+                Обновить график
+            </button>
+        </div>
+    </section>
+
+    <section id="notes-section">
+        <div class="bg-surface-container-lowest dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-outline-variant/20">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Личные заметки</h3>
+                <span class="material-symbols-outlined text-primary">edit_note</span>
+            </div>
+            <textarea id="notes-area" class="w-full h-64 bg-transparent border-none text-secondary dark:text-zinc-400 leading-relaxed resize-none p-0" placeholder="Ваши идеи и задачи на сегодня..."></textarea>
+        </div>
+    </section>
+
+    <section>
+        <div class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-2xl text-white shadow-xl shadow-primary/20">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <p class="text-[10px] font-extrabold uppercase tracking-[0.2em] opacity-80">Статус дня</p>
+                    <h4 class="text-xl font-bold">Все под контролем!</h4>
+                </div>
+                <span class="material-symbols-outlined text-white text-3xl">auto_awesome</span>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 mb-4">
+                <p id="daily-fact" class="text-sm font-medium italic">Загружаю интересный факт...</p>
+            </div>
+            
+            <div id="alarm-info" class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider bg-black/10 w-fit px-3 py-1.5 rounded-lg">
+                <span class="material-symbols-outlined text-sm">notifications_active</span>
+                <span id="alarm-status">Будильник не активен</span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-[#FAF9F9]/90 backdrop-blur-xl dark:bg-[#0d0e0e]/90 z-50 rounded-t-3xl shadow-[0_-8px_24px_-4px_rgba(0,0,0,0.05)]">
+    <button id="btn-notes" onclick="showSection('notes')" class="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-primary active-tab">
+        <span class="material-symbols-outlined">description</span>
+        <span class="text-[10px] font-bold">ЗАМЕТКИ</span>
+    </button>
+    <button id="btn-timesheet" onclick="showSection('timesheet')" class="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-secondary">
+        <span class="material-symbols-outlined">timer</span>
+        <span class="text-[10px] font-bold">ТАБЕЛЬ</span>
+    </button>
+</nav>
+
+<script>
+    // Хранилище
+    const state = JSON.parse(localStorage.getItem('app_state')) || {
+        notes: "",
+        endTime: null
+    };
+
+    const save = () => localStorage.setItem('app_state', JSON.stringify(state));
+
+    // Переключение вкладок
+    function showSection(type) {
+        const isNotes = type === 'notes';
+        document.getElementById('notes-section').classList.toggle('hidden', !isNotes);
+        document.getElementById('timesheet-section').classList.toggle('hidden', isNotes);
+        
+        document.getElementById('btn-notes').classList.toggle('active-tab', isNotes);
+        document.getElementById('btn-timesheet').classList.toggle('active-tab', !isNotes);
+    }
+
+    // Заметки
+    const nArea = document.getElementById('notes-area');
+    nArea.value = state.notes;
+    nArea.addEventListener('input', (e) => {
+        state.notes = e.target.value;
+        save();
+    });
+
+    // Обработка табеля (поиск времени ухода)
+    function saveTimesheet() {
+        const raw = document.getElementById('timesheet-input').value;
+        // Ищем все вхождения времени HH:MM
+        const times = raw.match(/\d{2}:\d{2}/g);
+        
+        if (times && times.length > 0) {
+            // Берем самое позднее время из строки (обычно это выход)
+            state.endTime = times.sort().reverse()[0];
+            save();
+            updateUI();
+            alert('Будильник установлен на 5 минут раньше ' + state.endTime);
+            showSection('notes');
+        } else {
+            alert('Не удалось распознать время. Убедитесь, что время в формате 00:00');
+        }
+    }
+
+    function updateUI() {
+        const status = document.getElementById('alarm-status');
+        if (state.endTime) {
+            const [h, m] = state.endTime.split(':').map(Number);
+            let alertM = m - 5;
+            let alertH = h;
+            if (alertM < 0) { alertM += 60; alertH -= 1; }
+            status.innerText = `Сигнал в ${alertH}:${alertM.toString().padStart(2, '0')}`;
+        }
+    }
+
+    // Факты
+    const facts = [
+        "Твой мозг генерирует достаточно энергии, чтобы зажечь небольшую лампочку.",
+        "Пчелы способны узнавать человеческие лица.",
+        "Мед — единственный продукт, который никогда не портится.",
+        "У осьминога целых три сердца.",
+        "Облака могут весить сотни тонн.",
+        "Шоколад улучшает когнитивные способности мозга."
+    ];
+    document.getElementById('daily-fact').innerText = "Факт: " + facts[Math.floor(Math.random() * facts.length)];
+
+    // Цикл проверки будильника
+    setInterval(() => {
+        if (!state.endTime) return;
+        
+        const now = new Date();
+        const current = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        const [h, m] = state.endTime.split(':').map(Number);
+        let alertM = m - 5;
+        let alertH = h;
+        if (alertM < 0) { alertM += 60; alertH -= 1; }
+        const alertTime = `${alertH}:${alertM.toString().padStart(2, '0')}`;
+
+        if (current === alertTime) {
+            document.getElementById('alarm-sound').play();
+            if (confirm('Пора собираться! До конца смены осталось 5 минут.')) {
+                state.endTime = null; // Выключаем после срабатывания
+                save();
+                updateUI();
+            }
+        }
+    }, 30000);
+
+    updateUI();
+</script>
+</body>
+</html>
