@@ -14,361 +14,275 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary-fixed-dim": "#ecbaba", "on-error": "#ffffff", "on-secondary-fixed": "#1b1c1c",
-                        "on-primary-container": "#734e4e", "surface-container-low": "#f5f3f3", "surface-variant": "#e3e2e2",
-                        "on-surface-variant": "#504444", "secondary": "#5e5e5e", "primary": "#7b5455",
-                        "tertiary-fixed-dim": "#afcebc", "on-background": "#1b1c1c", "error-container": "#ffdad6",
-                        "surface": "#faf9f9", "surface-bright": "#faf9f9", "outline-variant": "#d4c2c2",
-                        "on-primary": "#ffffff", "on-primary-fixed-variant": "#613d3e", "on-tertiary": "#ffffff",
-                        "tertiary": "#486456", "secondary-fixed": "#e3e2e2", "on-error-container": "#93000a",
-                        "on-tertiary-container": "#415d4f", "surface-tint": "#7b5455", "secondary-container": "#e3e2e2",
-                        "on-tertiary-fixed-variant": "#314c3f", "inverse-on-surface": "#f2f0f0", "secondary-fixed-dim": "#c7c6c6",
-                        "surface-container-lowest": "#ffffff", "inverse-surface": "#303031", "tertiary-container": "#b6d5c3",
-                        "tertiary-fixed": "#caead7", "surface-container-high": "#e9e8e8", "on-primary-fixed": "#2f1314",
-                        "surface-dim": "#dbdad9", "outline": "#827473", "on-tertiary-fixed": "#042015",
-                        "on-secondary": "#ffffff", "on-surface": "#1b1c1c", "primary-fixed": "#ffdad9",
-                        "on-secondary-container": "#646464", "on-secondary-fixed-variant": "#464747", "error": "#ba1a1a",
-                        "background": "#faf9f9", "primary-container": "#f4c2c2", "surface-container-highest": "#e3e2e2",
-                        "inverse-primary": "#ecbaba", "surface-container": "#efeded"
-                    },
-                    fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["Plus Jakarta Sans"] }
+                        "primary": "#7b5455",
+                        "primary-fixed-dim": "#ecbaba",
+                        "surface": "#faf9f9",
+                        "surface-dark": "#0d0e0e",
+                        "surface-container": "#f5f3f3",
+                        "surface-container-dark": "#181a1a",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-dark": "#e4e6e6",
+                        "tertiary": "#486456",
+                    }
                 }
             }
         }
     </script>
     <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; display: inline-block; line-height: 1; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
         .editorial-gradient { background: linear-gradient(135deg, #7B5455 0%, #F4C2C2 100%); }
-        .active-nav { background-color: #F4C2C2 !important; color: #1B1C1C !important; }
-        .dark .active-nav { background-color: #7B5455 !important; color: #FAF9F9 !important; }
         .hidden-section { display: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .active-day { background-color: #F4C2C2 !important; transform: scale(1.1); font-weight: bold; }
+        .active-nav { background-color: #ecbaba !important; color: #1b1c1c !important; border-radius: 12px; }
+        .active-day { background-color: #7b5455 !important; color: white !important; transform: scale(1.1); }
+        body { transition: background 0.3s, color 0.3s; }
     </style>
 </head>
-<body class="bg-surface text-on-surface font-body selection:bg-primary-container">
+<body class="bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark font-body">
 
 <audio id="alarm-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
 <!-- AppBar -->
-<header class="fixed top-0 w-full z-50 bg-[#FAF9F9]/80 dark:bg-[#1B1C1C]/80 backdrop-blur-xl shadow-sm">
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl shadow-sm border-b dark:border-white/5">
     <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-[#7B5455]">schedule</span>
-            <h1 id="page-title" class="font-headline text-xl font-extrabold tracking-tight">Главная</h1>
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">schedule</span>
+            <h1 id="header-title" class="text-lg font-extrabold tracking-tight uppercase italic">Главная</h1>
         </div>
-        <button onclick="toggleTheme()" class="material-symbols-outlined text-secondary">contrast</button>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="material-symbols-outlined opacity-60">contrast</button>
+            <div id="top-clock" class="font-mono font-bold text-primary dark:text-primary-fixed-dim text-sm">00:00</div>
+        </div>
     </div>
 </header>
 
-<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto">
-    
-    <!-- РАЗДЕЛ: ГЛАВНАЯ -->
-    <div id="section-home" class="space-y-12">
-        <section class="relative overflow-hidden rounded-xl bg-surface-container-low p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
-                <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-                        <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">СИНХРОНИЗАЦИЯ: ОК</span>
-                    </div>
-                    <h2 id="main-clock" class="font-headline text-7xl md:text-8xl font-extrabold tracking-tighter text-on-surface">00:00</h2>
-                    <p class="text-sm font-medium text-secondary mt-2 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">alarm</span>
-                        Ближайший выход: <span id="next-alarm-display">--:--</span>
-                    </p>
-                </div>
-                <div class="flex flex-col items-start md:items-end">
-                    <span id="current-day-name" class="text-xl font-bold text-primary">--</span>
-                    <span id="current-date-full" class="text-sm text-secondary">--</span>
-                </div>
-            </div>
-            <div class="absolute -right-16 -top-16 w-64 h-64 editorial-gradient opacity-10 rounded-full blur-3xl"></div>
-        </section>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto">
 
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2 bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-black/5">
-                <h3 class="font-headline text-lg font-bold mb-4">Статус задач</h3>
-                <div id="home-tasks-preview" class="space-y-3 opacity-60 italic text-sm text-center py-4">Нет задач на сегодня</div>
-                <div class="mt-8">
-                    <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
-                        <div id="home-progress-bar" class="h-full editorial-gradient w-0 rounded-full transition-all duration-500"></div>
+    <!-- SECTION: HOME -->
+    <div id="section-home" class="space-y-8">
+        <section class="relative overflow-hidden rounded-3xl bg-surface-container dark:bg-surface-container-dark p-8 shadow-sm">
+            <div class="relative z-10 space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-[10px] font-bold tracking-widest opacity-50 uppercase">Sync Active</span>
+                </div>
+                <h2 id="home-clock" class="text-7xl font-black tracking-tighter">00:00</h2>
+                <div class="flex justify-between items-end">
+                    <p class="text-sm opacity-60" id="home-date">Загрузка даты...</p>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold uppercase opacity-40">Часы сегодня</p>
+                        <p id="home-hours" class="text-2xl font-black text-primary dark:text-primary-fixed-dim">0.0</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-primary text-on-primary p-6 rounded-xl shadow-lg flex flex-col justify-between">
-                <span class="material-symbols-outlined mb-4">timer</span>
-                <h3 class="text-lg font-bold">Сегодня</h3>
-                <p class="text-4xl font-extrabold" id="home-total-hours">0ч</p>
-                <button onclick="showSection('timesheet')" class="mt-4 w-full py-2 bg-primary-container text-on-primary-container rounded-xl text-xs font-bold">ОТКРЫТЬ ТАБЕЛЬ</button>
+            <div class="absolute -right-20 -top-20 w-64 h-64 editorial-gradient opacity-10 rounded-full blur-3xl"></div>
+        </section>
+
+        <section class="grid grid-cols-2 gap-4">
+            <div onclick="showSection('tasks')" class="bg-surface-container dark:bg-surface-container-dark p-5 rounded-2xl cursor-pointer">
+                <span class="material-symbols-outlined text-primary mb-2">checklist</span>
+                <p class="text-xs font-bold uppercase opacity-40">Задачи</p>
+                <p id="home-task-count" class="text-xl font-bold">0 активных</p>
+            </div>
+            <div onclick="showSection('timesheet')" class="bg-primary text-white p-5 rounded-2xl cursor-pointer">
+                <span class="material-symbols-outlined mb-2">alarm</span>
+                <p class="text-xs font-bold uppercase opacity-60">Будильник</p>
+                <p id="home-alarm" class="text-xl font-bold">--:--</p>
             </div>
         </section>
 
-        <section id="fact-card" class="bg-tertiary-container/30 border border-tertiary/10 p-8 rounded-xl flex flex-col md:flex-row gap-8 items-center">
-            <div class="flex-1">
-                <div class="flex items-center gap-2 mb-4 text-tertiary">
-                    <span class="material-symbols-outlined">lightbulb</span>
-                    <h3 class="font-headline text-sm font-bold uppercase tracking-widest">Факт дня</h3>
-                </div>
-                <blockquote id="fact-text" class="text-xl font-bold leading-snug italic opacity-80">Загрузка...</blockquote>
-                <button onclick="refreshFact()" class="mt-6 text-xs font-bold text-tertiary hover:underline">ЕЩЕ ФАКТ</button>
+        <!-- Fact -->
+        <section class="bg-tertiary/5 border border-tertiary/10 p-6 rounded-3xl">
+            <div class="flex items-center gap-2 mb-2 text-tertiary">
+                <span class="material-symbols-outlined text-sm">lightbulb</span>
+                <span class="text-[10px] font-bold uppercase">Знаете ли вы?</span>
             </div>
+            <p id="fact-display" class="text-sm italic opacity-80 leading-relaxed">Загрузка факта...</p>
         </section>
     </div>
 
-    <!-- РАЗДЕЛ: ТАБЕЛЬ -->
+    <!-- SECTION: TIMESHEET -->
     <div id="section-timesheet" class="hidden-section space-y-6">
-        <div class="bg-surface-container-low p-6 rounded-2xl space-y-6 shadow-sm border border-black/5">
+        <div class="bg-surface-container dark:bg-surface-container-dark p-6 rounded-3xl space-y-6">
             <div class="flex justify-between items-center">
-                <h2 class="font-bold text-primary">Настройка смен</h2>
-                <button onclick="applyPreset()" class="text-[10px] bg-primary text-white px-3 py-1 rounded-full">МОЙ ГРАФИК</button>
+                <h3 class="font-bold uppercase text-xs opacity-50">Учет времени (2 смены)</h3>
+                <button onclick="applyPreset()" class="bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold">МОЙ ГРАФИК</button>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-4 p-4 bg-white/50 rounded-xl">
-                    <p class="text-[10px] font-bold opacity-50 uppercase">Смена 1</p>
-                    <input type="time" id="ts-s1" onchange="syncData()" class="w-full border-none rounded-lg bg-surface">
-                    <input type="time" id="ts-e1" onchange="syncData()" class="w-full border-none rounded-lg bg-surface">
+            
+            <div class="grid grid-cols-1 gap-6">
+                <div class="space-y-3 p-4 bg-black/5 dark:bg-white/5 rounded-2xl">
+                    <p class="text-[10px] font-bold opacity-40 uppercase">Смена 1 (Утро)</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="time" id="ts-s1" onchange="sync()" class="bg-transparent border-b border-primary/20 text-xl font-bold p-1 w-full focus:ring-0">
+                        <input type="time" id="ts-e1" onchange="sync()" class="bg-transparent border-b border-primary/20 text-xl font-bold p-1 w-full focus:ring-0">
+                    </div>
                 </div>
-                <div class="space-y-4 p-4 bg-white/50 rounded-xl">
-                    <p class="text-[10px] font-bold opacity-50 uppercase">Смена 2</p>
-                    <input type="time" id="ts-s2" onchange="syncData()" class="w-full border-none rounded-lg bg-surface">
-                    <input type="time" id="ts-e2" onchange="syncData()" class="w-full border-none rounded-lg bg-surface">
+                <div class="space-y-3 p-4 bg-black/5 dark:bg-white/5 rounded-2xl">
+                    <p class="text-[10px] font-bold opacity-40 uppercase">Смена 2 (Вечер)</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="time" id="ts-s2" onchange="sync()" class="bg-transparent border-b border-primary/20 text-xl font-bold p-1 w-full focus:ring-0">
+                        <input type="time" id="ts-e2" onchange="sync()" class="bg-transparent border-b border-primary/20 text-xl font-bold p-1 w-full focus:ring-0">
+                    </div>
                 </div>
             </div>
-            <div class="p-4 bg-primary-container/20 rounded-xl text-center">
-                <p class="text-xs font-bold opacity-60 uppercase">Всего за день</p>
-                <p class="text-4xl font-black text-primary" id="ts-total-display">0.0 ч</p>
+
+            <div class="flex items-center justify-between p-4 bg-primary/10 rounded-2xl">
+                <span class="text-sm font-bold opacity-60 uppercase tracking-widest">Итого за день</span>
+                <span id="ts-total" class="text-3xl font-black text-primary">0.0 ч</span>
             </div>
         </div>
     </div>
 
-    <!-- РАЗДЕЛ: ЗАДАЧИ -->
+    <!-- SECTION: TASKS -->
     <div id="section-tasks" class="hidden-section space-y-6">
-        <div id="task-calendar-strip" class="flex gap-2 overflow-x-auto no-scrollbar py-2"></div>
+        <div id="calendar-strip" class="flex gap-2 overflow-x-auto no-scrollbar py-2"></div>
+        
         <div class="flex gap-2">
-            <input type="text" id="new-task-input" placeholder="Добавить задачу..." class="flex-1 border-none rounded-xl bg-surface-container">
-            <button onclick="addNewTask()" class="editorial-gradient text-white w-12 h-12 rounded-xl">+</button>
+            <input type="text" id="task-input" placeholder="Новая задача..." class="flex-1 rounded-2xl border-none bg-surface-container dark:bg-surface-container-dark p-4 focus:ring-primary text-sm">
+            <button onclick="addTask()" class="bg-primary text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                <span class="material-symbols-outlined">add</span>
+            </button>
         </div>
-        <ul id="full-task-list" class="space-y-3"></ul>
+        
+        <ul id="task-list" class="space-y-3"></ul>
     </div>
 
-    <!-- РАЗДЕЛ: ЗАМЕТКИ -->
+    <!-- SECTION: NOTES -->
     <div id="section-notes" class="hidden-section">
-        <textarea id="main-notes" oninput="syncData()" placeholder="Ваши заметки на сегодня..." class="w-full h-96 border-none rounded-2xl bg-surface-container p-6 focus:ring-primary"></textarea>
+        <textarea id="notes-area" oninput="sync()" placeholder="Напишите здесь свои мысли..." class="w-full h-80 rounded-3xl border-none bg-surface-container dark:bg-surface-container-dark p-6 focus:ring-primary text-sm leading-relaxed"></textarea>
     </div>
 
 </main>
 
-<!-- Bottom Nav -->
-<nav class="fixed bottom-0 left-0 w-full z-50 bg-[#FAF9F9]/80 dark:bg-[#1B1C1C]/80 backdrop-blur-xl rounded-t-2xl shadow-lg flex justify-around items-center px-4 pb-6 pt-3">
-    <button id="nav-home" onclick="showSection('home')" class="flex flex-col items-center justify-center p-3 rounded-xl transition-all">
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full h-20 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl flex justify-around items-center px-4 border-t dark:border-white/5 z-50">
+    <button id="nav-home" onclick="showSection('home')" class="flex flex-col items-center p-3">
         <span class="material-symbols-outlined">home</span>
-        <span class="text-[10px] font-medium uppercase mt-1">Home</span>
+        <span class="text-[9px] font-bold uppercase mt-1">Home</span>
     </button>
-    <button id="nav-timesheet" onclick="showSection('timesheet')" class="flex flex-col items-center justify-center p-3 rounded-xl transition-all">
+    <button id="nav-timesheet" onclick="showSection('timesheet')" class="flex flex-col items-center p-3">
         <span class="material-symbols-outlined">timer</span>
-        <span class="text-[10px] font-medium uppercase mt-1">Timesheet</span>
+        <span class="text-[9px] font-bold uppercase mt-1">T-Sheet</span>
     </button>
-    <button id="nav-tasks" onclick="showSection('tasks')" class="flex flex-col items-center justify-center p-3 rounded-xl transition-all">
-        <span class="material-symbols-outlined">assignment</span>
-        <span class="text-[10px] font-medium uppercase mt-1">Tasks</span>
+    <button id="nav-tasks" onclick="showSection('tasks')" class="flex flex-col items-center p-3">
+        <span class="material-symbols-outlined">checklist</span>
+        <span class="text-[9px] font-bold uppercase mt-1">Tasks</span>
     </button>
-    <button id="nav-notes" onclick="showSection('notes')" class="flex flex-col items-center justify-center p-3 rounded-xl transition-all">
+    <button id="nav-notes" onclick="showSection('notes')" class="flex flex-col items-center p-3">
         <span class="material-symbols-outlined">description</span>
-        <span class="text-[10px] font-medium uppercase mt-1">Notes</span>
-    </button>
-    <button onclick="refreshFact()" class="flex flex-col items-center justify-center p-3 rounded-xl transition-all">
-        <span class="material-symbols-outlined">lightbulb</span>
-        <span class="text-[10px] font-medium uppercase mt-1">Facts</span>
+        <span class="text-[9px] font-bold uppercase mt-1">Notes</span>
     </button>
 </nav>
 
 <script>
-    let currentDay = new Date().toISOString().split('T')[0];
-    let db = JSON.parse(localStorage.getItem('prod_assistant_db')) || {};
-    const audio = document.getElementById('alarm-audio');
+    let db = JSON.parse(localStorage.getItem('prod_db')) || {};
+    let selectedDate = new Date().toISOString().split('T')[0];
+    const alarmAudio = document.getElementById('alarm-audio');
 
-    // Навигация
+    // 1. НАВИГАЦИЯ
     function showSection(id) {
         document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden-section'));
         document.getElementById('section-' + id).classList.remove('hidden-section');
         
         document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
-        const activeBtn = document.getElementById('nav-' + id);
-        if(activeBtn) activeBtn.classList.add('active-nav');
+        document.getElementById('nav-' + id).classList.add('active-nav');
         
-        const titles = { 'home': 'Главная', 'timesheet': 'Табель', 'tasks': 'Задачи', 'notes': 'Заметки' };
-        document.getElementById('page-title').innerText = titles[id] || 'Главная';
+        const titles = {home: 'Главная', timesheet: 'Табель', tasks: 'Задачи', notes: 'Заметки'};
+        document.getElementById('header-title').innerText = titles[id];
         
-        if(id === 'tasks') initTaskCalendar();
-        updateHomeDisplay();
+        if (id === 'tasks') renderCalendar();
+        loadDayData();
     }
 
-    // Темы
+    // 2. ТЕМА
     function toggleTheme() {
         document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
     }
 
-    // Время и Будильники
+    // 3. ЧАСЫ И БУДИЛЬНИКИ
     function updateClock() {
         const now = new Date();
-        document.getElementById('main-clock').innerText = now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+        const timeStr = now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+        const fullTimeStr = now.toLocaleTimeString('ru-RU');
         
+        if(document.getElementById('home-clock')) document.getElementById('home-clock').innerText = timeStr;
+        document.getElementById('top-clock').innerText = fullTimeStr;
+        document.getElementById('home-date').innerText = now.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
+
+        // Логика будильника (каждую минуту)
+        if (now.getSeconds() === 0) {
+            checkAlarms(now);
+        }
+    }
+
+    function checkAlarms(now) {
         const today = now.toISOString().split('T')[0];
-        const data = db[today];
-        if(data) {
-            const check = (timeStr) => {
-                if(!timeStr) return;
-                const [h, m] = timeStr.split(':');
-                if(now.getHours() == h && now.getMinutes() == (m - 5) && now.getSeconds() === 0) {
-                    audio.play();
-                    alert("5 минут до окончания смены!");
-                }
-            };
-            check(data.e1);
-            check(data.e2);
-        }
-    }
+        const dayData = db[today];
+        if (!dayData) return;
 
-    // Синхронизация данных
-    function syncData() {
-        if(!db[currentDay]) db[currentDay] = { tasks: [], notes: '', s1:'', e1:'', s2:'', e2:'' };
+        const currentHHMM = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
         
-        const data = db[currentDay];
-        data.s1 = document.getElementById('ts-s1').value;
-        data.e1 = document.getElementById('ts-e1').value;
-        data.s2 = document.getElementById('ts-s2').value;
-        data.e2 = document.getElementById('ts-e2').value;
-        data.notes = document.getElementById('main-notes').value;
-        
-        localStorage.setItem('prod_assistant_db', JSON.stringify(db));
-        updateHomeDisplay();
-    }
-
-    function updateHomeDisplay() {
-        const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
-        document.getElementById('current-day-name').innerText = now.toLocaleDateString('ru-RU', {weekday: 'long'});
-        document.getElementById('current-date-full').innerText = now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
-
-        const data = db[todayStr] || {};
-        
-        // Расчет часов
-        const getM = (t) => t ? parseInt(t.split(':')[0])*60 + parseInt(t.split(':')[1]) : 0;
-        let totalM = 0;
-        if(data.s1 && data.e1) totalM += (getM(data.e1) - getM(data.s1));
-        if(data.s2 && data.e2) totalM += (getM(data.e2) - getM(data.s2));
-        
-        document.getElementById('ts-total-display').innerText = (totalM / 60).toFixed(1) + ' ч';
-        document.getElementById('home-total-hours').innerText = (totalM / 60).toFixed(1) + 'ч';
-
-        // Будильник
-        const nextAlarm = data.e2 || data.e1 || '--:--';
-        document.getElementById('next-alarm-display').innerText = nextAlarm;
-
-        // Задачи на главной
-        const tasks = data.tasks || [];
-        const taskBox = document.getElementById('home-tasks-preview');
-        if(tasks.length > 0) {
-            taskBox.innerHTML = tasks.slice(0, 2).map(t => `<div class="flex justify-between text-sm py-1 border-b border-black/5"><span>${t.text}</span><span>${t.done ? '✅' : '⏳'}</span></div>`).join('');
-            const doneCount = tasks.filter(t => t.done).length;
-            document.getElementById('home-progress-bar').style.width = (doneCount / tasks.length * 100) + '%';
-        }
-
-        // Подгрузка в инпуты табеля
-        if(currentDay === todayStr) {
-            document.getElementById('ts-s1').value = data.s1 || '';
-            document.getElementById('ts-e1').value = data.e1 || '';
-            document.getElementById('ts-s2').value = data.s2 || '';
-            document.getElementById('ts-e2').value = data.e2 || '';
-        }
-    }
-
-    // Календарь задач
-    function initTaskCalendar() {
-        const box = document.getElementById('task-calendar-strip');
-        box.innerHTML = '';
-        const today = new Date();
-        for(let i = -3; i < 10; i++) {
-            const d = new Date();
-            d.setDate(today.getDate() + i);
-            const dStr = d.toISOString().split('T')[0];
-            const btn = document.createElement('button');
-            btn.className = `flex-shrink-0 w-12 py-3 rounded-xl flex flex-col items-center bg-surface-container ${dStr === currentDay ? 'active-day' : ''}`;
-            btn.innerHTML = `<span class="text-[8px] uppercase">${d.toLocaleDateString('ru-RU', {weekday:'short'})}</span><span class="text-sm font-bold">${d.getDate()}</span>`;
-            btn.onclick = () => { currentDay = dStr; initTaskCalendar(); loadTasks(); };
-            box.appendChild(btn);
-        }
-        loadTasks();
-    }
-
-    function loadTasks() {
-        const list = document.getElementById('full-task-list');
-        list.innerHTML = '';
-        const tasks = (db[currentDay] && db[currentDay].tasks) ? db[currentDay].tasks : [];
-        tasks.forEach((t, i) => {
-            const li = document.createElement('li');
-            li.className = "flex items-center justify-between p-4 bg-surface-container rounded-xl shadow-sm";
-            li.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="rounded-full text-primary border-none bg-surface">
-                    <span class="${t.done ? 'line-through opacity-40' : ''}">${t.text}</span>
-                </div>
-                <button onclick="deleteTask(${i})" class="material-symbols-outlined text-sm opacity-30">delete</button>
-            `;
-            list.appendChild(li);
-        });
-        document.getElementById('main-notes').value = (db[currentDay] && db[currentDay].notes) ? db[currentDay].notes : '';
-    }
-
-    function addNewTask() {
-        const input = document.getElementById('new-task-input');
-        if(!input.value) return;
-        if(!db[currentDay]) db[currentDay] = { tasks: [], notes: '', s1:'', e1:'', s2:'', e2:'' };
-        db[currentDay].tasks.push({ text: input.value, done: false });
-        input.value = '';
-        syncData();
-        loadTasks();
-    }
-
-    function toggleTask(i) {
-        db[currentDay].tasks[i].done = !db[currentDay].tasks[i].done;
-        syncData();
-        loadTasks();
-    }
-
-    function deleteTask(i) {
-        db[currentDay].tasks.splice(i, 1);
-        syncData();
-        loadTasks();
-    }
-
-    // Пресет (из вашего табеля)
-    function applyPreset() {
-        const day = new Date(currentDay).getDay();
-        const p = {
-            0: {s1:'07:00', e1:'17:00'}, 1: {s2:'13:59', e2:'21:59'},
-            3: {s2:'12:59', e2:'22:59'}, 4: {s1:'07:00', e1:'09:00', s2:'13:59', e2:'23:59'}
+        const triggerAlarm = (endTime) => {
+            if (!endTime) return;
+            const [h, m] = endTime.split(':');
+            const endTotal = parseInt(h) * 60 + parseInt(m);
+            const alarmTotal = endTotal - 5;
+            const ah = Math.floor(alarmTotal / 60).toString().padStart(2, '0');
+            const am = (alarmTotal % 60).toString().padStart(2, '0');
+            
+            if (currentHHMM === `${ah}:${am}`) {
+                alarmAudio.play();
+                alert("🔔 Осталось 5 минут до конца смены!");
+            }
         };
-        const active = p[day] || {s1:'09:00', e1:'18:00'};
-        document.getElementById('ts-s1').value = active.s1 || '';
-        document.getElementById('ts-e1').value = active.e1 || '';
-        document.getElementById('ts-s2').value = active.s2 || '';
-        document.getElementById('ts-e2').value = active.e2 || '';
-        syncData();
+
+        triggerAlarm(dayData.e1);
+        triggerAlarm(dayData.e2);
     }
 
-    // Факты
-    const facts = ["Мозг — самый жирный орган в теле (60% жира).", "Смех улучшает кровоток на 22%.", "Чтение 6 минут снижает стресс на 68%.", "Пчёлы могут считать до 4-х."];
-    function refreshFact() {
-        document.getElementById('fact-text').innerText = facts[Math.floor(Math.random()*facts.length)];
+    // 4. ТАБЕЛЬ И ДАННЫЕ
+    function sync() {
+        if (!db[selectedDate]) db[selectedDate] = { tasks: [], notes: '', s1:'', e1:'', s2:'', e2:'' };
+        let d = db[selectedDate];
+        
+        d.s1 = document.getElementById('ts-s1').value;
+        d.e1 = document.getElementById('ts-e1').value;
+        d.s2 = document.getElementById('ts-s2').value;
+        d.e2 = document.getElementById('ts-e2').value;
+        d.notes = document.getElementById('notes-area').value;
+        
+        localStorage.setItem('prod_db', JSON.stringify(db));
+        calculateDayTotal();
+        updateHomeStatus();
     }
 
-    window.onload = () => {
-        showSection('home');
-        setInterval(updateClock, 1000);
-        refreshFact();
-    };
-</script>
-</body>
-</html>
+    function loadDayData() {
+        const d = db[selectedDate] || { s1:'', e1:'', s2:'', e2:'', tasks: [], notes: '' };
+        document.getElementById('ts-s1').value = d.s1 || '';
+        document.getElementById('ts-e1').value = d.e1 || '';
+        document.getElementById('ts-s2').value = d.s2 || '';
+        document.getElementById('ts-e2').value = d.e2 || '';
+        document.getElementById('notes-area').value = d.notes || '';
+        renderTasks();
+        calculateDayTotal();
+    }
+
+    function calculateDayTotal() {
+        const d = db[selectedDate] || {};
+        const getM = (t) => t ? parseInt(t.split(':')[0])*60 + parseInt(t.split(':')[1]) : 0;
+        
+        let total = 0;
+        if(d.s1 && d.e1) total += (getM(d.e1) - getM(d.s1));
+        if(d.s2 && d.e2) total += (getM(d.e2) - getM(d.s2));
+        
+        const hours = (total / 60).toFixed(1);
+        document.getElementById('ts-total').innerText = hours + ' ч';
+        if (selectedDate === new Date().toISOString().split('T')[0]) {
+            document.getElementById('home-hours').innerText = hours;
+            document.getElementById('home-alarm').innerText = d.e2 || d.e1 || '--:--';
+        }
+    }
+
+    // 5. ЗАДАЧИ И КАЛЕНДАРЬ
+    function renderCalendar() {
