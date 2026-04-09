@@ -23,11 +23,6 @@
                         "on-surface": "#e4e6e6",
                         "on-surface-variant": "#a9abab",
                         "secondary": "#a69b9b",
-                        "outline": "#737676"
-                    },
-                    fontFamily: {
-                        "headline": ["Plus Jakarta Sans"],
-                        "body": ["Plus Jakarta Sans"]
                     }
                 }
             }
@@ -37,221 +32,294 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d0e0e; color: #e4e6e6; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .glass-nav { background: rgba(24, 26, 26, 0.8); backdrop-filter: blur(20px); }
-        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .active-day { background-color: #ecbaba !important; color: #0d0e0e !important; transform: scale(1.1); }
     </style>
 </head>
 <body class="pb-32">
 
-    <!-- Аудио для будильника -->
     <audio id="alarm-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <!-- Header -->
-    <header class="fixed top-0 w-full z-50 bg-surface flex justify-between items-center px-6 h-16 border-b border-surface-container-high">
+    <header class="fixed top-0 w-full z-50 bg-[#0d0e0e]/90 backdrop-blur-md flex justify-between items-center px-6 h-16 border-b border-surface-container-high">
         <div class="flex items-center gap-4">
             <span class="material-symbols-outlined text-primary">schedule</span>
-            <h1 class="text-xl font-bold tracking-tighter">Productivity Assistant</h1>
+            <h1 class="text-lg font-bold">Productivity App</h1>
         </div>
-        <div id="clock" class="text-primary font-mono font-bold text-lg">00:00:00</div>
+        <div id="clock" class="text-primary font-mono font-bold">00:00:00</div>
     </header>
 
-    <main class="pt-24 px-6 max-w-2xl mx-auto space-y-10">
+    <main class="pt-20 px-6 max-w-2xl mx-auto space-y-6">
         
-        <!-- Секция Табеля и Будильника -->
+        <!-- Календарная лента -->
+        <section class="mt-4">
+            <div id="calendar-strip" class="flex gap-3 overflow-x-auto no-scrollbar py-4 px-2">
+                <!-- Дни генерятся через JS -->
+            </div>
+        </section>
+
+        <!-- Табель -->
         <section class="bg-surface-container p-6 rounded-2xl border border-surface-container-high">
-            <h2 class="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4">Учет времени и Будильник</h2>
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-primary text-[10px] font-bold uppercase tracking-widest">Табель рабочего времени</h2>
+                <button onclick="applyToWeek()" class="text-[10px] text-secondary border border-secondary/30 px-2 py-1 rounded-lg hover:bg-white/5">Применить ко всей неделе</button>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-3 mb-4">
                 <div>
-                    <label class="block text-xs text-secondary mb-1 uppercase">Начало</label>
-                    <input type="time" id="start-time" value="09:00" class="w-full bg-surface-container-high border-none rounded-lg text-on-surface focus:ring-primary">
+                    <label class="block text-[10px] text-secondary mb-1 uppercase">Начало</label>
+                    <input type="time" id="start-time" onchange="saveDayData()" class="w-full bg-surface-container-high border-none rounded-lg text-sm text-on-surface">
                 </div>
                 <div>
-                    <label class="block text-xs text-secondary mb-1 uppercase">Конец</label>
-                    <input type="time" id="end-time" value="18:00" class="w-full bg-surface-container-high border-none rounded-lg text-on-surface focus:ring-primary">
+                    <label class="block text-[10px] text-secondary mb-1 uppercase">Конец</label>
+                    <input type="time" id="end-time" onchange="saveDayData()" class="w-full bg-surface-container-high border-none rounded-lg text-sm text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-secondary mb-1 uppercase">Перерыв (мин)</label>
+                    <input type="number" id="break-duration" value="60" onchange="saveDayData()" class="w-full bg-surface-container-high border-none rounded-lg text-sm text-on-surface">
                 </div>
             </div>
-            <div class="flex items-center justify-between bg-primary-container/20 p-4 rounded-xl">
+
+            <div class="flex items-center justify-between bg-primary-container/20 p-4 rounded-xl border border-primary/10">
                 <div>
-                    <p class="text-xs text-secondary">Отработано (за вычетом 1ч обеда):</p>
-                    <p class="text-2xl font-bold text-primary" id="total-hours">0 ч 0 мин</p>
+                    <p class="text-[10px] text-secondary uppercase">Итого за день:</p>
+                    <p class="text-xl font-bold text-primary" id="total-hours">0 ч 0 мин</p>
                 </div>
                 <div class="text-right">
                     <p class="text-[10px] text-primary font-bold uppercase">Будильник (за 5 мин)</p>
-                    <p class="text-lg text-on-surface" id="alarm-time-display">17:55</p>
+                    <p class="text-lg text-on-surface" id="alarm-time-display">--:--</p>
                 </div>
             </div>
         </section>
 
-        <!-- Секция Задач -->
-        <section>
+        <!-- Задачи -->
+        <section class="bg-surface-container p-6 rounded-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Задачи на день</h3>
-                <span id="task-count" class="text-xs bg-primary text-on-primary px-2 py-1 rounded-full font-bold">0</span>
+                <h3 class="text-lg font-bold">Задачи на день</h3>
+                <span id="task-count" class="text-xs bg-primary text-on-primary px-2 py-0.5 rounded-full font-bold">0</span>
             </div>
             <div class="flex gap-2 mb-4">
-                <input type="text" id="task-input" placeholder="Что нужно сделать?" class="flex-1 bg-surface-container border-none rounded-xl text-on-surface focus:ring-primary">
-                <button onclick="addTask()" class="bg-primary text-on-primary px-4 rounded-xl font-bold active:scale-95 transition-transform">+</button>
+                <input type="text" id="task-input" placeholder="Добавить задачу..." class="flex-1 bg-surface-container-high border-none rounded-xl text-on-surface focus:ring-1 focus:ring-primary">
+                <button onclick="addTask()" class="bg-primary text-on-primary w-12 h-12 rounded-xl font-bold flex items-center justify-center active:scale-90 transition-all">
+                    <span class="material-symbols-outlined">add</span>
+                </button>
             </div>
-            <ul id="task-list" class="space-y-3">
-                <!-- Задачи появятся здесь -->
-            </ul>
+            <ul id="task-list" class="space-y-2"></ul>
         </section>
 
-        <!-- Секция Заметок -->
+        <!-- Заметки -->
         <section>
-            <h3 class="text-xl font-bold mb-4">Заметки</h3>
-            <textarea id="notes-input" oninput="saveNotes()" placeholder="Ваши мысли здесь..." class="w-full h-32 bg-surface-container border-none rounded-2xl text-on-surface focus:ring-primary p-4 mb-4"></textarea>
+            <h3 class="text-sm font-bold text-secondary uppercase mb-2 ml-1">Заметки</h3>
+            <textarea id="notes-input" oninput="saveDayData()" placeholder="Напишите что-нибудь..." class="w-full h-24 bg-surface-container border-none rounded-2xl text-on-surface focus:ring-primary p-4"></textarea>
         </section>
 
-        <!-- Рандомный факт -->
-        <section class="bg-primary/10 border border-primary/20 p-6 rounded-2xl relative overflow-hidden group">
-            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-primary opacity-10 text-8xl">lightbulb</span>
-            <h4 class="text-primary text-[10px] font-bold uppercase tracking-widest mb-2">Знаете ли вы?</h4>
-            <p id="fact-text" class="text-on-surface italic leading-relaxed relative z-10">Загрузка факта...</p>
-            <button onclick="displayFact()" class="mt-4 text-xs text-primary font-bold hover:underline relative z-10">СЛЕДУЮЩИЙ ФАКТ</button>
+        <!-- Факт -->
+        <section class="bg-primary/5 border border-primary/10 p-5 rounded-2xl">
+            <div class="flex items-center gap-2 mb-2 text-primary">
+                <span class="material-symbols-outlined text-sm">lightbulb</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Случайный факт</span>
+            </div>
+            <p id="fact-text" class="text-sm text-on-surface-variant italic">Загрузка...</p>
         </section>
 
     </main>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 w-full h-20 glass-nav flex justify-around items-center px-4 rounded-t-3xl border-t border-white/5">
+    <!-- Навигация -->
+    <nav class="fixed bottom-0 left-0 w-full h-20 bg-surface/80 backdrop-blur-xl flex justify-around items-center border-t border-white/5 z-50">
         <button class="flex flex-col items-center text-primary">
             <span class="material-symbols-outlined">home</span>
-            <span class="text-[10px] uppercase font-bold mt-1">Главная</span>
+            <span class="text-[10px] font-bold mt-1">Главная</span>
         </button>
-        <button class="flex flex-col items-center text-secondary opacity-50">
-            <span class="material-symbols-outlined">analytics</span>
-            <span class="text-[10px] uppercase font-bold mt-1">Отчеты</span>
+        <button class="flex flex-col items-center text-secondary">
+            <span class="material-symbols-outlined">description</span>
+            <span class="text-[10px] font-bold mt-1">Заметки</span>
         </button>
     </nav>
 
     <script>
-        // 1. ЛОГИКА ЧАСОВ И БУДИЛЬНИКА
+        let selectedDate = new Date().toISOString().split('T')[0];
+        let db = JSON.parse(localStorage.getItem('productivity_db')) || {};
+
+        // 1. КАЛЕНДАРЬ
+        function initCalendar() {
+            const strip = document.getElementById('calendar-strip');
+            strip.innerHTML = '';
+            const today = new Date();
+            
+            for (let i = -3; i < 14; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayName = date.toLocaleDateString('ru-RU', { weekday: 'short' });
+                const dayNum = date.getDate();
+
+                const div = document.createElement('button');
+                div.className = `flex flex-col items-center justify-center min-w-[50px] py-3 rounded-xl bg-surface-container transition-all ${dateStr === selectedDate ? 'active-day' : ''}`;
+                div.innerHTML = `<span class="text-[10px] uppercase font-bold">${dayName}</span><span class="text-lg font-extrabold">${dayNum}</span>`;
+                div.onclick = () => {
+                    selectedDate = dateStr;
+                    initCalendar();
+                    loadDayData();
+                };
+                strip.appendChild(div);
+            }
+        }
+
+        // 2. ЧАСЫ И БУДИЛЬНИК
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('ru-RU');
-            document.getElementById('clock').innerText = timeStr;
+            document.getElementById('clock').innerText = now.toLocaleTimeString('ru-RU');
+            
+            // Проверка будильника
+            const currentDay = now.toISOString().split('T')[0];
+            if (db[currentDay] && db[currentDay].endTime) {
+                const [h, m] = db[currentDay].endTime.split(':');
+                const endTimestamp = new Date();
+                endTimestamp.setHours(h, m, 0);
+                
+                const alarmTime = new Date(endTimestamp.getTime() - 5 * 60000);
+                if (now.getHours() === alarmTime.getHours() && now.getMinutes() === alarmTime.getMinutes() && now.getSeconds() === 0) {
+                    document.getElementById('alarm-audio').play();
+                    alert("До конца смены 5 минут!");
+                }
+            }
+        }
 
-            checkAlarm(now);
+        // 3. ДАННЫЕ ДНЯ
+        function loadDayData() {
+            const data = db[selectedDate] || { startTime: '09:00', endTime: '18:00', break: 60, tasks: [], notes: '' };
+            
+            document.getElementById('start-time').value = data.startTime;
+            document.getElementById('end-time').value = data.endTime;
+            document.getElementById('break-duration').value = data.break;
+            document.getElementById('notes-input').value = data.notes || '';
+            
+            renderTasks(data.tasks || []);
+            calculateHours();
+        }
+
+        function saveDayData() {
+            if (!db[selectedDate]) db[selectedDate] = {};
+            
+            db[selectedDate].startTime = document.getElementById('start-time').value;
+            db[selectedDate].endTime = document.getElementById('end-time').value;
+            db[selectedDate].break = document.getElementById('break-duration').value;
+            db[selectedDate].notes = document.getElementById('notes-input').value;
+            
+            localStorage.setItem('productivity_db', JSON.stringify(db));
+            calculateHours();
         }
 
         function calculateHours() {
             const start = document.getElementById('start-time').value;
             const end = document.getElementById('end-time').value;
-            
+            const breakMin = parseInt(document.getElementById('break-duration').value) || 0;
+
             if (start && end) {
                 const s = start.split(':');
                 const e = end.split(':');
-                let diff = (new Date(0,0,0,e[0],e[1]) - new Date(0,0,0,s[0],s[1])) / 1000 / 60;
+                const startDate = new Date(0,0,0, s[0], s[1]);
+                const endDate = new Date(0,0,0, e[0], e[1]);
                 
-                diff -= 60; // Вычитаем 1 час (60 мин) обеда
+                let diff = (endDate - startDate) / 1000 / 60;
+                diff -= breakMin;
                 if (diff < 0) diff = 0;
 
-                const hours = Math.floor(diff / 60);
-                const mins = diff % 60;
-                document.getElementById('total-hours').innerText = `${hours} ч ${mins} мин`;
+                const h = Math.floor(diff / 60);
+                const m = diff % 60;
+                document.getElementById('total-hours').innerText = `${h} ч ${m} мин`;
 
-                // Рассчитываем время будильника (за 5 минут до конца)
-                let alarmMins = parseInt(e[1]) - 5;
-                let alarmHours = parseInt(e[0]);
-                if (alarmMins < 0) {
-                    alarmMins += 60;
-                    alarmHours -= 1;
-                }
-                const alarmStr = `${String(alarmHours).padStart(2, '0')}:${String(alarmMins).padStart(2, '0')}`;
-                document.getElementById('alarm-time-display').innerText = alarmStr;
+                // Показ времени будильника
+                const alarmDate = new Date(endDate.getTime() - 5 * 60000);
+                document.getElementById('alarm-time-display').innerText = 
+                    String(alarmDate.getHours()).padStart(2, '0') + ":" + String(alarmDate.getMinutes()).padStart(2, '0');
             }
         }
 
-        let alarmTriggered = false;
-        function checkAlarm(now) {
-            const alarmTime = document.getElementById('alarm-time-display').innerText;
-            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        // 4. ЗАДАЧИ
+        function addTask() {
+            const input = document.getElementById('task-input');
+            if (!input.value.trim()) return;
 
-            if (currentTime === alarmTime && !alarmTriggered) {
-                document.getElementById('alarm-audio').play();
-                alert("Пора собираться! До конца работы осталось 5 минут.");
-                alarmTriggered = true;
-            }
-            
-            // Сброс триггера через минуту
-            if (currentTime !== alarmTime) alarmTriggered = false;
+            if (!db[selectedDate]) db[selectedDate] = {};
+            if (!db[selectedDate].tasks) db[selectedDate].tasks = [];
+
+            db[selectedDate].tasks.push({ text: input.value, done: false });
+            input.value = '';
+            saveDayData();
+            renderTasks(db[selectedDate].tasks);
         }
 
-        // 2. ЛОГИКА ЗАДАЧ
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-        function renderTasks() {
+        function renderTasks(tasks) {
             const list = document.getElementById('task-list');
             list.innerHTML = '';
-            tasks.forEach((task, index) => {
+            tasks.forEach((t, i) => {
                 const li = document.createElement('li');
-                li.className = "bg-surface-container-high p-4 rounded-xl flex items-center justify-between group";
+                li.className = "bg-surface-container-high p-3 rounded-xl flex items-center justify-between";
                 li.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleTask(${index})" class="rounded border-primary text-primary bg-transparent">
-                        <span class="${task.done ? 'line-through text-secondary' : ''}">${task.text}</span>
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i})" class="rounded border-primary bg-transparent text-primary focus:ring-0">
+                        <span class="text-sm ${t.done ? 'line-through text-secondary' : ''}">${t.text}</span>
                     </div>
-                    <button onclick="deleteTask(${index})" class="text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="deleteTask(${i})" class="text-secondary hover:text-primary">
                         <span class="material-symbols-outlined text-sm">delete</span>
                     </button>
                 `;
                 list.appendChild(li);
             });
             document.getElementById('task-count').innerText = tasks.length;
-            localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
-        function addTask() {
-            const input = document.getElementById('task-input');
-            if (input.value.trim()) {
-                tasks.push({ text: input.value, done: false });
-                input.value = '';
-                renderTasks();
+        function toggleTask(i) {
+            db[selectedDate].tasks[i].done = !db[selectedDate].tasks[i].done;
+            saveDayData();
+            renderTasks(db[selectedDate].tasks);
+        }
+
+        function deleteTask(i) {
+            db[selectedDate].tasks.splice(i, 1);
+            saveDayData();
+            renderTasks(db[selectedDate].tasks);
+        }
+
+        // 5. МАССОВОЕ ЗАПОЛНЕНИЕ
+        function applyToWeek() {
+            const start = document.getElementById('start-time').value;
+            const end = document.getElementById('end-time').value;
+            const breakM = document.getElementById('break-duration').value;
+
+            if(confirm("Применить это время ко всем дням в календаре?")) {
+                const today = new Date();
+                for (let i = -3; i < 14; i++) {
+                    const d = new Date();
+                    d.setDate(today.getDate() + i);
+                    const ds = d.toISOString().split('T')[0];
+                    if (!db[ds]) db[ds] = { tasks: [], notes: '' };
+                    db[ds].startTime = start;
+                    db[ds].endTime = end;
+                    db[ds].break = breakM;
+                }
+                localStorage.setItem('productivity_db', JSON.stringify(db));
+                alert("Расписание обновлено!");
             }
         }
 
-        function toggleTask(index) {
-            tasks[index].done = !tasks[index].done;
-            renderTasks();
-        }
-
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            renderTasks();
-        }
-
-        // 3. ЗАМЕТКИ
-        function saveNotes() {
-            const text = document.getElementById('notes-input').value;
-            localStorage.setItem('notes', text);
-        }
-
-        // 4. РАНДОМНЫЕ ФАКТЫ
+        // 6. ФАКТЫ
         const facts = [
             "Пчёлы могут распознавать человеческие лица.",
-            "Мозг вырабатывает достаточно электричества, чтобы зажечь небольшую лампочку.",
-            "Шоколад был когда-то валютой в империи Майя.",
-            "Осьминоги имеют три сердца и голубую кровь.",
-            "Клубника — это не ягода, а банан — да."
+            "Для мозга работа — это естественное состояние.",
+            "20 минут сна днем повышают продуктивность на 34%.",
+            "Многозадачность снижает IQ на 10 пунктов."
         ];
-
-        function displayFact() {
-            const fact = facts[Math.floor(Math.random() * facts.length)];
-            document.getElementById('fact-text').innerText = fact;
+        function showFact() {
+            document.getElementById('fact-text').innerText = facts[Math.floor(Math.random()*facts.length)];
         }
 
-        // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
         window.onload = () => {
+            initCalendar();
+            loadDayData();
             setInterval(updateClock, 1000);
-            document.getElementById('start-time').addEventListener('change', calculateHours);
-            document.getElementById('end-time').addEventListener('change', calculateHours);
-            
-            document.getElementById('notes-input').value = localStorage.getItem('notes') || '';
-            
-            calculateHours();
-            renderTasks();
-            displayFact();
+            showFact();
         };
     </script>
 </body>
